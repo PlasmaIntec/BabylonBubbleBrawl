@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+<html>
+
+<!--
+ Use OpenGL to draw two cubes, one using glDrawArrays,
+ and one using glDrawElements. The arrow keys can be
+ used to rotate both cubes.
+
+ Note that this program does not use lighting.
+-->
+
+<head>
+<meta charset="UTF-8">
+<title>Snowman</title>
+
+<script src="https://jgfoster.github.io/GraphicsBook/2020/web-site/source/glsim/glsim.js"></script>
+
+<script>
+	
+	var camera = new Camera();
+
+    var rotateX = 15;   // rotations of cube about the axes
+    var rotateY = -15;
+    var rotateZ = 0;
+
+	var separationDistance = 2; // distance between pyramids
+    
+    /* Arrays for use with glDrawElements. This is the data for a cube with 6 different
+     * colors at the six vertices. (Looks kind of strange without lighting.)
+     */
+    
+    var vertexCoords = [  // Coordinates for the vertices of a pyramid.
+               .5,.5,0, .5,-.5,0, -.5,-.5,0, -.5,.5,0,
+			   0,0,2*Math.tan(Math.PI/4)/1 ];	
+              
+    var vertexColors = [  // An RGB color value for each vertex
+               1,1,1,   1,0,0,   1,1,0,   0,1,0,
+               0,0,1 ];
+
+	var blueColors = [
+		0,0,1, 0,0,1, 0,0,1, 0,0,1, 0,1,0
+	]
+
+	var blueLineColors = [
+		1,1,1,   1,0,0,   1,1,0,   0,1,0,
+		0,0,1		
+	]
+
+	var frame = 0;
+
+	var randomColors = [
+		getRandomColors(15), getRandomColors(15), getRandomColors(15), 
+		getRandomColors(15), getRandomColors(15), getRandomColors(15)
+	];
+			   
+    var elementSquareBaseArray = [  // Vertex number for the square base.
+              0,1,2,3 ];
+    var elementTriangleFacesArray = [  // Vertex number for the triangular faces.
+              0,1,4, 1,2,4, 2,3,4, 3,0,4 ];
+
+    /* We will draw edges for the first cube using this array with glDrawElements.
+     * (It looks pretty bad without lighting if edges aren't drawn.
+     */
+	 
+    var edgeElementArray = [
+			0,1, 1,2, 2,3, 3,0,		// edges of the bottom square
+			0,4, 1,4, 2,4, 3,4 ];	// edges connecting to top point
+			
+    // ----------------------------------------------------------------------
+
+	function scaleWithFactor(array, factor) {
+		return array.map(num => num * factor);
+	}
+
+	function shiftWithFactor(array, factor) {
+		return array.map(num => (num + factor) > 1 ? (num + factor) % 1 : num + factor);
+	}
+
+	function getRandomColors(amount) {
+		return Array(amount).fill(0).map(e => Math.random(1));
+	}
+
+	function smoothSphere(radius, slices, stacks, zOffset) {
+		var i,j;
+		for (j = 0; j < stacks; j++) {
+			var latitude1 = (Math.PI/stacks) * j - Math.PI/2;
+			var latitude2 = (Math.PI/stacks) * (j+1) - Math.PI/2;
+			var sinLat1 = Math.sin(latitude1);
+			var cosLat1 = Math.cos(latitude1);
+			var sinLat2 = Math.sin(latitude2);
+			var cosLat2 = Math.cos(latitude2);
+			glBegin(GL_QUAD_STRIP);
+			for (i = 0; i <= slices; i++) {
+				var longitude = (2*Math.PI/slices) * i;
+				var sinLong = Math.sin(longitude);
+				var cosLong = Math.cos(longitude);
+				var x1 = cosLong * cosLat1;
+				var y1 = sinLong * cosLat1;
+				var z1 = sinLat1;
+				var x2 = cosLong * cosLat2;
+				var y2 = sinLong * cosLat2;
+				var z2 = sinLat2;
+				glNormal3d(x2,y2,z2);
+				glVertex3d(radius*x2,radius*y2,radius*z2+zOffset);
+				glNormal3d(x1,y1,z1);
+				glVertex3d(radius*x1,radius*y1,radius*z1+zOffset);
+			}
+			glEnd();
+		}
+	}
+
+	/* Draws a sphere. */
+	function uvSphere(radius, slices, stacks) {
+		var i,j;
+		for (j = 0; j < stacks; j++) {
+			var latitude1 = (Math.PI/stacks) * j - Math.PI/2;
+			var latitude2 = (Math.PI/stacks) * (j+1) - Math.PI/2;
+			var sinLat1 = Math.sin(latitude1);
+			var cosLat1 = Math.cos(latitude1);
+			var sinLat2 = Math.sin(latitude2);
+			var cosLat2 = Math.cos(latitude2);
+			glBegin(GL_TRIANGLE_STRIP);
+			for (i = 0; i <= slices; i++) {
+				var longitude = (2*Math.PI/slices) * i;
+				var sinLong = Math.sin(longitude);
+				var cosLong = Math.cos(longitude);
+				var x1 = cosLong * cosLat1;
+				var y1 = sinLong * cosLat1;
+				var z1 = sinLat1;
+				var x2 = cosLong * cosLat2;
+				var y2 = sinLong * cosLat2;
+				var z2 = sinLat2;
+				glNormal3d(x2,y2,z2);
+			glVertex3d(radius*x2,radius*y2,radius*z2);
+			glNormal3d(x1,y1,z1);
+				glVertex3d(radius*x1,radius*y1,radius*z1);
+			}
+			glEnd();
+		}
+	} // end uvSphere
+
+	/*  Sets the positions of the colored lights and turns them on and off, depending on
+	*  the state of the redLight, greenLight, and blueLight options. Draws a small
+	*  sphere at the location of each light.
+	*/
+	function lights() {
+		glColor3d(0.5,0.5,0.5);
+		var zero = [ 0, 0, 0, 1 ];
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
+
+		glEnable(GL_LIGHT0);
+
+
+		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, [0.5, 0, 0, 1]);  
+		glEnable(GL_LIGHT1);
+		glPushMatrix();
+		glRotated(-frame, 0, 1, 0);
+		glTranslated(10, 7, 0);
+		glLightfv(GL_LIGHT1, GL_POSITION, zero);
+		uvSphere(0.5, 16, 8);
+		glPopMatrix();
+
+		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, zero); // Turn off emission color!
+	} // end lights()
+
+
+    function display() {  // Draws the image.
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		camera.apply();
+		lights();
+		glRotatef(-90,1,0,0);
+		
+		var resolution = 25;
+		smoothSphere(1.5, resolution, resolution, 0);
+		smoothSphere(1, resolution, resolution, 2);
+		smoothSphere(.8, resolution, resolution, 3.2);
+
+		frame++;
+
+		setTimeout(display, 30);
+    }
+    
+    function initGL() {		
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
+		glEnable(GL_NORMALIZE);
+		glEnable(GL_DEPTH_TEST);
+		glClearColor(0,0,0,1);
+		glColor3f(0,0,0);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [0.7, 0.7, 0.7, 1]);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [0.2, 0.2, 0.2, 1]);
+		glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 16);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, [1,1,1,1]);
+		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [0.2,0.2,0.2,1]);
+		glPolygonOffset(1,1); 
+
+		glEnable(GL_LIGHT1);		
+		var blue1 = [ 0.4, 0.4, 0.6, 1 ];
+		var blue2 = [ 0.0, 0, 0.8, 1 ];
+		var blue3 = [ 0.0, 0, 0.15, 1 ];
+		glLightfv( GL_LIGHT1, GL_DIFFUSE, blue1 );
+		glLightfv( GL_LIGHT1, GL_SPECULAR, blue2 );
+		glLightfv( GL_LIGHT1, GL_AMBIENT, blue3 );
+		var position = [ 10,0,0,1 ];
+		glLightfv(GL_LIGHT1, GL_POSITION, position);
+    }
+    
+    function doKeyDown(evt) {
+        var key = evt.keyCode;
+        if ( key == 37 ) // left
+           rotateY -= 15;
+        else if ( key == 39 ) // right
+           rotateY += 15;
+        else if ( key == 40) // down
+           rotateX += 15;
+        else if ( key == 38 ) // up
+           rotateX -= 15;
+        else if ( key == 33 ) // page up
+           rotateZ += 15;
+        else if ( key == 34 ) // page down
+           rotateZ -= 15;
+        else if ( key == 13 )  // enter
+           rotateX = rotateY = rotateZ = 0;
+		else if ( key == 219 ) { // [	
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();  
+			glOrtho(-4, 4, -2, 2, 1, 10);
+			glMatrixMode(GL_MODELVIEW);
+		}
+		else if ( key == 221 ) { // ]
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();  
+			glFrustum(-4, 4, -2, 2, 1, 10);
+			glMatrixMode(GL_MODELVIEW);
+		}
+		else if (key >= 48 && key <= 57) {
+			separationDistance = key - 48;
+		}
+        if (key >=34 && key <= 40) {
+            evt.preventDefault();
+        }
+        display();
+    }
+    
+    function init() {  // Called by <body onload="init()">, when the page has loaded.
+        try {
+            glsimUse("glcanvas"); // OpenGL will draw to the canvas with id="glcanvas".
+        }
+        catch (e) {
+            document.getElementById("canvas-holder").innerHTML =
+                "Sorry, an error occured:<br>" + e;
+            return;
+        }
+        document.onkeydown = doKeyDown;
+        initGL();
+		camera = new Camera();
+		camera.installTrackball(display);
+        display();
+    }
+
+</script>
+
+</head>
+
+<body onload="init()">
+
+<h3>Cubes Drawn with glDrawArrays and glDrawElements</h3>
+
+<p>(Rotate using arrow keys, page up, page down, and home keys.)</p>
+
+<noscript>
+<p><b>Sorry, this page requires JavaScript!</b></p>
+</noscript>
+
+<div id="canvas-holder">
+<canvas id="glcanvas" width="800" height="700"></canvas>
+</div>
+
+</body>
+</html>
