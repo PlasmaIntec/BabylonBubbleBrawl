@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>OpenGL 1.1 Graphics</title>
+    <script src="https://jgfoster.github.io/GraphicsBook/2020/web-site/source/glsim/glsim.js"></script>
+    <script>
+
+// JavaScript
+var canvas;    // DOM object corresponding to the canvas
+var graphics;  // 2D graphics context for drawing on the canvas
+
+var rotateX = 15;   // rotations of cube about the axes
+var rotateY = -15;
+var rotateZ = 0;
+
+function square(r, g, b, base) { 
+    glColor3f(r,g,b);
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex3f(-base/2, -base/2, base/2);
+    glVertex3f(base/2, -base/2, base/2);
+    glVertex3f(base/2, base/2, base/2);
+    glVertex3f(-base/2, base/2, base/2);
+    glEnd();
+}
+
+function triangle(r, g, b, width, height) {
+    glColor3f(r,g,b);
+    glBegin(GL_TRIANGLES);
+    glVertex2f( -width/2, 0 );
+    glVertex2f( width/2, 0 );
+    glVertex2f( 0, height );
+    glEnd();
+}
+
+function cube(size) {  // draws a cube with side length = size
+	glPushMatrix();  // Save a copy of the current matrix.
+	glScalef(size,size,size); // scale unit cube to desired size
+
+	square(1, 0, 0); // red front face
+
+	glPushMatrix();
+	glRotatef(90, 0, 1, 0);
+	square(0, 1, 0); // green right face
+	glPopMatrix();
+
+	glPushMatrix();
+	glRotatef(-90, 1, 0, 0);
+	square(0, 0, 1); // blue top face
+	glPopMatrix();
+
+	glPushMatrix();
+	glRotatef(180, 0, 1, 0);
+	square(0, 1, 1); // cyan back face
+	glPopMatrix();
+
+	glPushMatrix();
+	glRotatef(-90, 0, 1, 0);
+	square(1, 0, 1); // magenta left face
+	glPopMatrix();
+
+	glPushMatrix();
+	glRotatef(90, 1, 0, 0);
+	square(1, 1, 0); // yellow bottom face
+	glPopMatrix();
+
+	glPopMatrix(); // Restore matrix to its state before cube() was called.
+}
+
+function pyramid(size) {  // draws a pyramid with side length = size
+	glPushMatrix();  // Save a copy of the current matrix.
+	glScalef(size,size,size); // scale unit pyramid to desired size
+  var h = 1;
+  var b = 1;
+  var RADIANS_TO_DEGREES = 180 / Math.PI;
+  var theta = 90 - (Math.atan(2*h/b) * RADIANS_TO_DEGREES);
+  var z_coordinate = Math.sqrt((b**2 + 4*h**2) / 4);
+
+  glPushMatrix();
+  glTranslatef(0, -.5, 0);
+  glRotatef(-90, 1, 0, 0);
+  square(0, 0, 1, b); // blue top face
+  glPopMatrix();
+
+	glPushMatrix();
+  glTranslatef(0, 0, .5);
+	glRotatef(theta, -1, 0, 0);
+	triangle(1, 0, 0, b, z_coordinate); // red front face
+	glPopMatrix();
+
+	glPushMatrix();
+  glTranslatef(0, 0, -.5);
+	glRotatef(-theta, -1, 0, 0);
+	triangle(1, 0, 1, b, z_coordinate); // purple back face
+	glPopMatrix();
+
+	glPushMatrix();
+  glTranslatef(-.5, 0, 0);
+	glRotatef(90, 0, 1, 0);
+	glRotatef(theta, 1, 0, 0);
+	triangle(0, 1, 0, b, z_coordinate); // green right face
+	glPopMatrix();
+
+	glPushMatrix();
+  glTranslatef(.5, 0, 0);
+	glRotatef(90, 0, 1, 0);
+	glRotatef(-theta, 1, 0, 0);
+	triangle(0, 1, 1, b, z_coordinate); // cyan right face
+	glPopMatrix();
+
+	glPopMatrix(); // Restore matrix to its state before cube() was called.
+}
+
+/**
+  *  Called when the display needs be redrawn. Usually, it will completely
+  *  redraw the image. 
+  */
+function display() {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // For 2D, usually leave out the depth buffer.
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();             // Start with no modeling transform. 
+		
+	// TODO: INSERT DRAWING CODE HERE!!
+	glRotatef(rotateZ,0,0,1);
+	glRotatef(rotateY,0,1,0);
+	glRotatef(rotateX,1,0,0);
+	pyramid(1);
+}
+
+/**
+  *  initGL() is called just once, by main(), to do initialization of OpenGL state
+  *  and other global state.
+  */
+function initGL() {
+  glClearColor(0.9, 0.9, 0.9, 1.0); // background color
+  glEnable(GL_DEPTH_TEST);      // Required for 3D drawing, not usually for 2D.
+  // Set up a simple orthographic projection, ignoring aspect ratio.
+  //    TODO:  should almost certainly use a different projection!
+  //    This will be done in display() if the projection can change
+  glMatrixMode(GL_PROJECTION);  
+  glLoadIdentity();             
+  glOrtho(-1, 1, -1, 1, -2, 2);
+
+  // glMatrixMode(GL_PROJECTION);
+  // glLoadIdentity();
+  // // glOrtho( -10, 10, -10, 10, -10, 10 );
+  // // glOrtho(-1, 1, -1, 1, -2, 2);
+  // glFrustum(-1, 1, -1, 1, -2, 2);
+  // glMatrixMode(GL_MODELVIEW);
+  // var camera = new Camera()
+  // camera.setOrthographic( 1 );
+  // camera.apply();
+}
+
+function doKeyDown(evt) {
+  var key = evt.keyCode;
+  if ( key == 37 ) // left
+      rotateY -= 15;
+  else if ( key == 39 ) // right
+      rotateY += 15;
+  else if ( key == 40) // down
+      rotateX += 15;
+  else if ( key == 38 ) // up
+      rotateX -= 15;
+  else if ( key == 33 ) // page up
+      rotateZ += 15;
+  else if ( key == 34 ) // page down
+      rotateZ -= 15;
+  else if ( key == 13 )  // return
+      rotateX = rotateY = rotateZ = 0;
+  else if ( key == 219 ) // [
+      new Camera().setOrthographic(1);
+  else if ( key == 221 ) // ]
+      new Camera().setOrthographic(0);
+  if (key >=34 && key <= 40) {
+      evt.preventDefault();
+  }
+  display();
+}
+
+function init() {
+  try {
+    glsimUse("glcanvas"); // OpenGL will draw to the canvas with id="glcanvas".
+  }
+  catch (e) {
+    document.getElementById("canvas-holder").innerHTML =
+      "Sorry, an error occured:<br>" + e;
+    return;
+  }
+  document.onkeydown = doKeyDown;
+  initGL();
+  display();  // Call display() when the page is first loaded.
+}
+
+    </script>
+  </head>
+  <body onload="init()">
+    <noscript>
+      <p><b>Sorry, this page requires JavaScript!</b></p>
+    </noscript>
+    
+    <!-- TODO: HTML controls such as buttons and popup menus can be added to the page. -->
+    
+    <div id="canvas-holder">
+      <!-- TODO: You can set the size of the drawing area in the next line -->
+      <canvas id="glcanvas" width="500" height="500"></canvas>
+    </div>
+ </body>
+</html>

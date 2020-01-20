@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Canvas Graphics</title>
+    <script>
+// JavaScript
+var canvas;    // DOM object corresponding to the canvas
+var graphics;  // 2D graphics context for drawing on the canvas
+
+function draw() {
+  // draw on the canvas, using the graphics context
+  graphics.fillText("Hello World", 10, 20);
+  
+var rect = canvas.getBoundingClientRect();
+var posx = rect.width / 2;
+var posy = rect.height / 2;
+
+graphics.fillStyle = "red";
+graphics.beginPath();
+graphics.arc(posx, posy, 50, 0, 2 * Math.PI);
+graphics.fill();
+graphics.fillStyle = "blue";
+graphics.beginPath();
+graphics.rect(posx, posy, 100, 100);
+graphics.fill();
+graphics.rotate(20 * Math.PI / 180);
+}
+
+function init() {
+  canvas = document.getElementById("theCanvas");
+  graphics = canvas.getContext("2d");
+  draw();  // draw something on the canvas
+}
+
+    </script>
+  </head>
+  <body onload="init()">
+    <canvas id="theCanvas" width="640" height="480"></canvas>
+  </body>
+</html>

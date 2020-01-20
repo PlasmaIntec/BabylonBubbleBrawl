@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html>
+
+<!--
+ Use OpenGL to draw two cubes, one using glDrawArrays,
+ and one using glDrawElements. The arrow keys can be
+ used to rotate both cubes.
+
+ Note that this program does not use lighting.
+-->
+
+<head>
+<meta charset="UTF-8">
+<title>Unlit Cube Example</title>
+
+<script src="https://jgfoster.github.io/GraphicsBook/2020/web-site/source/glsim/glsim.js"></script>
+
+<script>
+	
+	var camera = new Camera();
+
+    var rotateX = 15;   // rotations of cube about the axes
+    var rotateY = -15;
+    var rotateZ = 0;
+
+	var separationDistance = 2; // distance between pyramids
+    
+    /* Arrays for use with glDrawElements. This is the data for a cube with 6 different
+     * colors at the six vertices. (Looks kind of strange without lighting.)
+     */
+    
+    var vertexCoords = [  // Coordinates for the vertices of a pyramid.
+               .5,.5,0, .5,-.5,0, -.5,-.5,0, -.5,.5,0,
+			   0,0,2*Math.tan(Math.PI/4)/1 ];	
+              
+    var vertexColors = [  // An RGB color value for each vertex
+               1,1,1,   1,0,0,   1,1,0,   0,1,0,
+               0,0,1 ];
+
+	var blueColors = [
+		0,0,1, 0,0,1, 0,0,1, 0,0,1, 0,1,0
+	]
+
+	var blueLineColors = [
+		1,1,1,   1,0,0,   1,1,0,   0,1,0,
+		0,0,1		
+	]
+
+	var randomColors = [
+		getRandomColors(15), getRandomColors(15), getRandomColors(15), 
+		getRandomColors(15), getRandomColors(15), getRandomColors(15)
+	];
+			   
+    var elementSquareBaseArray = [  // Vertex number for the square base.
+              0,1,2,3 ];
+    var elementTriangleFacesArray = [  // Vertex number for the triangular faces.
+              0,1,4, 1,2,4, 2,3,4, 3,0,4 ];
+
+    /* We will draw edges for the first cube using this array with glDrawElements.
+     * (It looks pretty bad without lighting if edges aren't drawn.
+     */
+	 
+    var edgeElementArray = [
+			0,1, 1,2, 2,3, 3,0,		// edges of the bottom square
+			0,4, 1,4, 2,4, 3,4 ];	// edges connecting to top point
+			
+    // ----------------------------------------------------------------------
+
+	function scaleWithFactor(array, factor) {
+		return array.map(num => num * factor);
+	}
+
+	function shiftWithFactor(array, factor) {
+		return array.map(num => (num + factor) > 1 ? (num + factor) % 1 : num + factor);
+	}
+
+	function getRandomColors(amount) {
+		return Array(amount).fill(0).map(e => Math.random(1));
+	}
+
+	function pyramid(x, y, z, scale, colors, lineColors) {
+    
+		glLoadIdentity();             // Set up modelview transform, first cube.
+		glTranslatef(x, y, z);     // Move cube to left half of window.
+		
+		glRotatef(rotateZ,0,0,1);     // Apply rotations.
+		glRotatef(rotateY,0,1,0);
+		glRotatef(rotateX,1,0,0);
+		
+		glEnableClientState( GL_VERTEX_ARRAY );
+		glEnableClientState( GL_COLOR_ARRAY );
+		
+		glVertexPointer( 3, GL_FLOAT, 0, scaleWithFactor(vertexCoords, scale) );  // Set data type and location, second cube.
+		glColorPointer( 3, GL_FLOAT, 0, colors );
+		
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(1,1);
+		glDrawElements( GL_QUADS, 4, GL_UNSIGNED_INT, elementSquareBaseArray ); // Draw the base!
+		glDrawElements( GL_TRIANGLES, 12, GL_UNSIGNED_INT, elementTriangleFacesArray ); // Draw the triangular faces!
+		glDisable(GL_POLYGON_OFFSET_FILL);
+		
+		// glDisableClientState( GL_COLOR_ARRAY );  // Don't use color array for the edges.
+		glColorPointer( 3, GL_FLOAT, 0, lineColors  );
+		glLineWidth(2);
+		
+		glDrawElements( GL_LINES, 16, GL_UNSIGNED_INT, edgeElementArray );  // Draw the edges!
+
+	}
+
+    function display() {  // Draws the image.
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		pyramid(-separationDistance, 0, -3, .3, randomColors[0], randomColors[3]);
+		pyramid(0, 0, -3, .6, randomColors[1], randomColors[4]);
+		pyramid(separationDistance, 0, -3, 1, randomColors[2], randomColors[5]);
+    }
+    
+    function initGL() {
+        glMatrixMode(GL_PROJECTION);
+		glFrustum(-4, 4, -2, 2, 1, 10);
+        glMatrixMode(GL_MODELVIEW);
+        glEnable(GL_DEPTH_TEST);
+        glClearColor(0.5, 0.5, 0.5, 1);    
+    }
+    
+    function doKeyDown(evt) {
+        var key = evt.keyCode;
+        if ( key == 37 ) // left
+           rotateY -= 15;
+        else if ( key == 39 ) // right
+           rotateY += 15;
+        else if ( key == 40) // down
+           rotateX += 15;
+        else if ( key == 38 ) // up
+           rotateX -= 15;
+        else if ( key == 33 ) // page up
+           rotateZ += 15;
+        else if ( key == 34 ) // page down
+           rotateZ -= 15;
+        else if ( key == 13 )  // enter
+           rotateX = rotateY = rotateZ = 0;
+		else if ( key == 219 ) { // [	
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();  
+			glOrtho(-4, 4, -2, 2, 1, 10);
+			glMatrixMode(GL_MODELVIEW);
+		}
+		else if ( key == 221 ) { // ]
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();  
+			glFrustum(-4, 4, -2, 2, 1, 10);
+			glMatrixMode(GL_MODELVIEW);
+		}
+		else if (key >= 48 && key <= 57) {
+			separationDistance = key - 48;
+		}
+        if (key >=34 && key <= 40) {
+            evt.preventDefault();
+        }
+        display();
+    }
+    
+    function init() {  // Called by <body onload="init()">, when the page has loaded.
+        try {
+            glsimUse("glcanvas"); // OpenGL will draw to the canvas with id="glcanvas".
+        }
+        catch (e) {
+            document.getElementById("canvas-holder").innerHTML =
+                "Sorry, an error occured:<br>" + e;
+            return;
+        }
+        document.onkeydown = doKeyDown;
+        initGL();
+        display();
+    }
+
+</script>
+
+</head>
+
+<body onload="init()">
+
+<h3>Cubes Drawn with glDrawArrays and glDrawElements</h3>
+
+<p>(Rotate using arrow keys, page up, page down, and home keys.)</p>
+
+<noscript>
+<p><b>Sorry, this page requires JavaScript!</b></p>
+</noscript>
+
+<div id="canvas-holder">
+<canvas id="glcanvas" width="800" height="400"></canvas>
+</div>
+
+</body>
+</html>
