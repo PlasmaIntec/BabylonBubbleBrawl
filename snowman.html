@@ -132,31 +132,61 @@
 				var y2 = sinLong * cosLat2;
 				var z2 = sinLat2;
 				glNormal3d(x2,y2,z2);
-			glVertex3d(radius*x2,radius*y2,radius*z2);
-			glNormal3d(x1,y1,z1);
+				glVertex3d(radius*x2,radius*y2,radius*z2);
+				glNormal3d(x1,y1,z1);
 				glVertex3d(radius*x1,radius*y1,radius*z1);
 			}
 			glEnd();
 		}
 	} // end uvSphere
 
+	function ground(length, height) {
+		var purple = [ 0.6, 0, 0.6, 1 ];
+		var white = [0.4, 0.4, 0.4];
+		glMaterialfv( GL_FRONT, GL_AMBIENT_AND_DIFFUSE, purple );  
+		glMaterialfv( GL_FRONT, GL_SPECULAR, white );
+		glMaterialf( GL_FRONT, GL_SHININESS, 64 );
+		glBegin(GL_QUADS);
+		glNormal3f(0,0,1);
+		glVertex3f(length,length, height);
+		glVertex3f(length,-length, height);
+		glVertex3f(-length,-length, height);
+		glVertex3f(-length,length, height);
+		glEnd();
+	}
+
+	function shadow(length, height) {
+		var black = [ 0, 0, 0, 0 ];
+		var white = [0.4, 0.4, 0.4];
+		glMaterialfv( GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black );  
+		glBegin(GL_QUADS);
+		glPushMatrix();
+		glRotated(-frame+180, 0, 0, 1);
+		glTranslated(3, 0, 0);
+		glNormal3f(0,0,1);
+		glVertex3f(length,length, height);
+		glVertex3f(length,-length, height);
+		glVertex3f(-length*3,-length, height);
+		glVertex3f(-length*3,length, height);
+		glEnd();
+	}
+
 	/*  Sets the positions of the colored lights and turns them on and off, depending on
 	*  the state of the redLight, greenLight, and blueLight options. Draws a small
 	*  sphere at the location of each light.
 	*/
-	function lights() {
+	function lights(radius, height) {
 		glColor3d(0.5,0.5,0.5);
 		var zero = [ 0, 0, 0, 1 ];
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
 
 		glEnable(GL_LIGHT0);
 
-
 		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, [0.5, 0, 0, 1]);  
 		glEnable(GL_LIGHT1);
 		glPushMatrix();
 		glRotated(-frame, 0, 1, 0);
-		glTranslated(10, 7, 0);
+		glTranslated(radius, height, 0);
 		glLightfv(GL_LIGHT1, GL_POSITION, zero);
 		uvSphere(0.5, 16, 8);
 		glPopMatrix();
@@ -169,7 +199,7 @@
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		camera.apply();
-		lights();
+		lights(5,3);
 		glRotatef(-90,1,0,0);
 		
 		var resolution = 25;
@@ -177,9 +207,12 @@
 		smoothSphere(1, resolution, resolution, 2);
 		smoothSphere(.8, resolution, resolution, 3.2);
 
-		frame++;
+		ground(10, -1);
+		shadow(1, -.99);
 
-		setTimeout(display, 30);
+		frame += .1;
+
+		setTimeout(display, 100);
     }
     
     function initGL() {		
@@ -187,6 +220,8 @@
 		glEnable(GL_LIGHT0);
 		glEnable(GL_NORMALIZE);
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_COLOR_MATERIAL);
+		glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, 1);
 		glClearColor(0,0,0,1);
 		glColor3f(0,0,0);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [0.7, 0.7, 0.7, 1]);
