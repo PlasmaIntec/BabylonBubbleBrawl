@@ -50,9 +50,14 @@
             // This creates a basic Babylon Scene object (non-mesh)
             var scene = new BABYLON.Scene(engine);
         
-        
-         	 var camera = new BABYLON.ArcRotateCamera("camera1",  0, 0, 0, new BABYLON.Vector3(0, 0, 0), scene);
-          	camera.setPosition(new BABYLON.Vector3(-12, 10, -24));
+            var flag = false;
+            if (flag) {
+                var camera = new BABYLON.ArcRotateCamera("camera1",  0, 0, 0, new BABYLON.Vector3(0, 0, 0), scene);
+                camera.setPosition(new BABYLON.Vector3(-12, 10, -24));
+            } else {
+                var camera = new BABYLON.UniversalCamera("UniversalCamera", new BABYLON.Vector3(0, 0, -10), scene);
+                camera.setTarget(BABYLON.Vector3.Zero());
+            }
           	camera.attachControl(canvas, true);
               
             // This targets the camera to scene origin
@@ -91,7 +96,6 @@
             wingMaterial.diffuseTexture = wingTexture;
             wing1.material = wingMaterial;
             wing2.material = wingMaterial;
-            window.wing = wing1;
         
             count = 0;
             scene.registerAfterRender(() => {
