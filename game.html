@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+
+        <!-- Babylon.js -->
+        <script src="babylonjs/pep.min.js"></script>
+        <script src="babylonjs/dat.gui.min.js"></script>
+        <script src="babylonjs/ammo.js"></script>
+        <script src="babylonjs/cannon.js"></script>
+        <script src="babylonjs/Oimo.js"></script>
+        <script src="babylonjs/earcut.min.js"></script>
+        <script src="babylonjs/babylon.js"></script>
+        <script src="babylonjs/babylon.inspector.bundle.js"></script>
+        <script src="babylonjs/babylonjs.materials.min.js"></script>
+        <script src="babylonjs/babylonjs.proceduralTextures.min.js"></script>
+        <script src="babylonjs/babylonjs.postProcess.min.js"></script>
+        <script src="babylonjs/babylonjs.loaders.js"></script>
+        <script src="babylonjs/babylonjs.serializers.min.js"></script>
+        <script src="babylonjs/babylon.gui.min.js"></script>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+<body>
+	<canvas id="renderCanvas"></canvas>
+	<script>
+		var canvas = document.getElementById("renderCanvas");
+
+		var engine = null;
+		var scene = null;
+		var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); };
+		var createScene = function () {
+			
+			// Scene
+			var scene = new BABYLON.Scene(engine);			
+
+			// Physics engine
+			scene.enablePhysics(null, new BABYLON.CannonJSPlugin());
+			scene.getPhysicsEngine().setGravity(BABYLON.Vector3.Zero());
+			var physicsViewer = new BABYLON.Debug.PhysicsViewer();
+			var physicsHelper = new BABYLON.PhysicsHelper(scene);
+			
+			// Camera
+			var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 200, new BABYLON.Vector3(0, 0, 0), scene);
+			camera.attachControl(canvas, true);
+
+			// Light
+			var light = new BABYLON.PointLight("omni", new BABYLON.Vector3(0, 50, 0), scene);
+
+			// Glow
+			var gl = new BABYLON.GlowLayer("glow", scene);
+			gl.intensity = 10;
+
+			// Ground
+			var makeGround = () => {
+				var ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 1, scene, false);
+				var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
+				groundMaterial.specularColor = BABYLON.Color3.Black();
+				ground.material = groundMaterial;
+				ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 1 }, scene);
+				return ground;
+			}
+
+			// Sphere
+			var makeSphere = (x, y, z, r, color) => {
+				var sphere = BABYLON.Mesh.CreateSphere("sphere", 16, r, scene);
+				var sphereMat = new BABYLON.StandardMaterial("ground", scene);
+				sphereMat.diffuseColor = color;
+				sphereMat.specularColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+				sphere.material = sphereMat;
+				sphere.radius = r/2;
+				sphere.position = new BABYLON.Vector3(x, y, z);
+				sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: r, restitution: 0, friction: 1 }, scene);
+				sphere.physicsImpostor.friction = 100;
+				return sphere;
+			}
+
+			// Bullet
+			var makeBullet = (x, y, z, r, color) => {
+				var bullet = makeSphere(x, y, z, r, color);
+				bullet.material.emissiveColor = color;
+				bullet.physicsImpostor.dispose();
+				return bullet;
+			}
+
+			// Helpers
+			function addMaterialToMesh(sphere) {
+				var sphereMaterial = new BABYLON.StandardMaterial("sphereMaterial", scene);
+				sphereMaterial.alpha = 0.5;
+				sphere.material = sphereMaterial;
+			}
+
+			function showExplosionDebug(data) {
+				addMaterialToMesh(data.sphere);
+				data.sphere.isVisible = true;
+
+				return {
+					sphere: data.sphere,
+				};
+			}
+
+			function hideExplosionDebug(debugData) {
+				debugData.sphere.isVisible = false;
+			}
+
+			// Bullet Mechanics
+			var bullets = [];
+			var fireBullet = (parentMesh) => {
+				var mesh = parentMesh.source || parentMesh;
+				var bulletColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+				var bulletPos = mesh.position.clone();
+				var bullet = makeBullet(bulletPos.x, bulletPos.y, bulletPos.z, 10, bulletColor);
+				var bulletIndex = bullets.push(bullet) - 1;
+				setTimeout(() => {
+					bullet.dispose();
+					var event = physicsHelper.applyRadialExplosionImpulse( // or .applyRadialExplosionForce
+						bullet.position,
+						{
+							radius: bullet.radius,
+							strength: 100,
+							falloff: BABYLON.PhysicsRadialImpulseFalloff.Linear, // or BABYLON.PhysicsRadialImpulseFalloff.Constant
+						}
+					);
+					// Debug
+					var eventData = event.getData();
+					var debugData = showExplosionDebug(eventData);
+					setTimeout(function (debugData) {
+						hideExplosionDebug(debugData);
+						event.dispose(); // we need to cleanup/dispose, after we don't use the data anymore
+					}, 1500, debugData);
+				}, 2000)
+			}
+
+			makeGround();
+			var sphere = makeSphere(0, 20, 0, 5, BABYLON.Color3.Green());
+			sphere.aimDirection = new BABYLON.Vector3(1,0,0);
+			for (var x = 20; x < 40; x += 4) {
+				for (var y = 10; y < 30; y += 4) {
+					for (var z = -40; z < 40; z += 4) {
+						makeSphere(x, y, z, 2, BABYLON.Color3.Red());
+					}
+				}
+			}
+
+			// Impulse
+			var pulse = (object, direction) => {
+				object.physicsImpostor.applyImpulse(direction, object.getAbsolutePosition());
+			}
+
+			// Fire by pressing spacebar
+			scene.actionManager = new BABYLON.ActionManager(scene);
+			scene.actionManager.registerAction(
+				new BABYLON.ExecuteCodeAction(
+					{
+						trigger: BABYLON.ActionManager.OnKeyUpTrigger,
+						parameter: ' '
+					},
+					() => fireBullet(sphere)
+				)
+			)
+			scene.actionManager.registerAction(
+				new BABYLON.ExecuteCodeAction(
+					{
+						trigger: BABYLON.ActionManager.OnKeyDownTrigger,
+						parameter: 'w'
+					},
+					() => pulse(sphere, new BABYLON.Vector3(-10, 0, 0))
+				)
+			)
+			scene.actionManager.registerAction(
+				new BABYLON.ExecuteCodeAction(
+					{
+						trigger: BABYLON.ActionManager.OnKeyDownTrigger,
+						parameter: 'a'
+					},
+					() => pulse(sphere, new BABYLON.Vector3(0, 0, -10))
+				)
+			)
+			scene.actionManager.registerAction(
+				new BABYLON.ExecuteCodeAction(
+					{
+						trigger: BABYLON.ActionManager.OnKeyDownTrigger,
+						parameter: 's'
+					},
+					() => pulse(sphere, new BABYLON.Vector3(10, 0, 0))
+				)
+			)
+			scene.actionManager.registerAction(
+				new BABYLON.ExecuteCodeAction(
+					{
+						trigger: BABYLON.ActionManager.OnKeyDownTrigger,
+						parameter: 'd'
+					},
+					() => pulse(sphere, new BABYLON.Vector3(0, 0, 10))
+				)
+			)
+
+			// Mouse
+			var mousemovef = (object) => {
+				var pickResult = scene.pick(scene.pointerX, scene.pointerY);
+
+				if (pickResult.hit) {
+					var diffX = pickResult.pickedPoint.x - object.position.x;
+					var diffY = pickResult.pickedPoint.z - object.position.z;
+					object.rotation.y = Math.atan2(diffX,diffY);	
+				}	
+			}
+
+			scene.onPointerMove = () => {
+				mousemovef(sphere);
+			};
+
+			var vecToLocal = (vector, mesh) => {
+				var m = mesh.getWorldMatrix();
+				var v = BABYLON.Vector3.TransformCoordinates(vector, m);
+				return v;		 
+			}
+
+			var castRay = (object) => {      
+				var origin = object.position;
+				var pickResult = scene.pick(scene.pointerX, scene.pointerY);
+
+				if (pickResult.hit && pickResult.pickedMesh.id == "ground") {
+					var diffX = pickResult.pickedPoint.x - object.position.x;
+					var diffY = pickResult.pickedPoint.z - object.position.z;
+					object.rotation.y = Math.atan2(diffX,diffY);	
+
+					var forward = new BABYLON.Vector3(diffX,object.position.y,diffY);	
+				} else {
+					return
+				}
+			
+				var direction = forward.subtract(origin);
+				direction = BABYLON.Vector3.Normalize(direction);
+				object.aimDirection = direction;
+			
+				var length = 100;
+			
+				var ray = new BABYLON.Ray(origin, direction, length);
+				var rayHelper = new BABYLON.RayHelper(ray);
+				rayHelper.show(scene);
+
+				return rayHelper;
+			}
+
+			// Animations
+			var time = 0;
+			var prevRay;
+			scene.registerBeforeRender(function () {
+				bullets.forEach(bullet => bullet.position = bullet.position.add(sphere.aimDirection.scale(.5)));
+				sphere.physicsImpostor.setLinearVelocity(sphere.physicsImpostor.getLinearVelocity().scale(.99))
+				gl.intensity = Math.cos(time) + 1;
+				if (prevRay) prevRay.hide(scene);
+				prevRay = castRay(sphere);
+				time += .1;
+			});
+
+			return scene;
+		}
+
+		engine = createDefaultEngine();
+		if (!engine) throw 'engine should not be null.';
+		scene = createScene();
+
+		engine.runRenderLoop(function () {
+			if (scene) {
+				scene.render();
+			}
+		});
+
+		// Resize
+		window.addEventListener("resize", function () {
+			engine.resize();
+		});
+	</script>
+</body>
+</html>
