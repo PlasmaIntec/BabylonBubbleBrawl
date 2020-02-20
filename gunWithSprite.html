@@ -252,9 +252,9 @@
 
 			// Heightmap			
 			var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
-			groundMaterial.diffuseTexture = new BABYLON.Texture("https://raw.githubusercontent.com/BabylonJS/Babylon.js/master/Playground/textures/earth.jpg", scene);
+			groundMaterial.diffuseTexture = new BABYLON.Texture("https://cdn11.bigcommerce.com/s-balh3740/images/stencil/1280x1280/products/12160/4292/president_barack_obama__54149.1396341148.jpg?c=2?imbypass=on", scene);
 
-			var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "https://raw.githubusercontent.com/BabylonJS/Babylon.js/master/Playground/textures/worldHeightMap.jpg", 200, 200, 250, 0, 10, scene, false);
+			var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "https://cdn11.bigcommerce.com/s-balh3740/images/stencil/1280x1280/products/12160/4292/president_barack_obama__54149.1396341148.jpg?c=2?imbypass=on", 200, 200, 250, 0, 100, scene, false);
 			ground.material = groundMaterial;
 			ground.position.y = -40;
 
