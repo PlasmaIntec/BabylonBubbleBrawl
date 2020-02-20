@@ -58,7 +58,7 @@ var makeBasicShooter = (scene, x, y, z, r, color) => {
 	return shooter;
 }
 
-var makeNuisance = (scene, x, y, z, r, color) => {	
+var makeNuisance = (scene, x, y, z, r, color, player, physicsHelper) => {	
 	var shooter = addPhysics(makeSphere(scene, x, y, z, r, color), r);
 	var leftAngle = 4*Math.PI/3;
 	var rightAngle = 5*Math.PI/3;
@@ -66,6 +66,26 @@ var makeNuisance = (scene, x, y, z, r, color) => {
 	var right = makeSphere(scene, 3*Math.cos(rightAngle), 0, 3*Math.sin(rightAngle), r/2, color);
 	left.parent = shooter;
 	right.parent = shooter;
+
+	var fireAtWill = () => {
+		var time = 5000*Math.random();
+		setTimeout(() => {
+			fireBullet(shooter, physicsHelper, player.position.subtract(shooter.position));
+			fireAtWill();
+		}, time);
+	}
+
+	var moveAtWill = () => {
+		var time = 1000*Math.random();
+		var direction = new BABYLON.Vector3(20*Math.random()-10, 0, 20*Math.random()-10);
+		setTimeout(() => {
+			pulse(shooter, direction);
+			moveAtWill();
+		}, time);
+	}
+
+	fireAtWill();
+	moveAtWill();
 
 	return shooter;
 }

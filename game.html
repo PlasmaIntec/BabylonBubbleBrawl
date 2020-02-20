@@ -83,7 +83,7 @@
 				}
 			}
 			var enemies = [];
-			var enemy = makeNuisance(scene, -20, 20, 0, 5, BABYLON.Color3.Blue());
+			var enemy = makeNuisance(scene, -20, 20, 0, 5, BABYLON.Color3.Blue(), sphere, physicsHelper);
 			enemies.push(enemy);
 
 			var map = {}; // object for multiple key presses
@@ -138,7 +138,7 @@
 			var prevRay;
 			var speed = 10;
 			scene.registerBeforeRender(function () {
-				bullets.forEach(bullet => bullet.position = bullet.position.add(sphere.aimDirection.scale(.5)));
+				bullets.forEach(bullet => bullet.position = bullet.position.add(BABYLON.Vector3.Normalize(bullet.direction)));
 				enemies.forEach(enemy => enemy.rotation = getAnglePointingAt(enemy.position, sphere.position));
 				sphere.physicsImpostor.setLinearVelocity(sphere.physicsImpostor.getLinearVelocity().scale(.99))
 				gl.intensity = Math.cos(time) + 1;
