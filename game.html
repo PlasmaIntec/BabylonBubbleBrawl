@@ -73,7 +73,7 @@
 
 			makeGround(scene);
 			var sphere = makeBasicShooter(scene, 0, 20, 0, 5, BABYLON.Color3.Green());
-			window.sphere = sphere;
+			window.sphere = sphere; // DELETE
 			sphere.aimDirection = new BABYLON.Vector3(1,0,0);
 			for (var x = 20; x < 40; x += 4) {
 				for (var y = 10; y < 30; y += 4) {
@@ -82,8 +82,11 @@
 					}
 				}
 			}
+			var enemies = [];
+			var enemy = makeNuisance(scene, -20, 20, 0, 5, BABYLON.Color3.Blue());
+			enemies.push(enemy);
 
-			var map = {}; //object for multiple key presses
+			var map = {}; // object for multiple key presses
 			addKeyboardInteractions(scene, sphere, physicsHelper, map)
 
 			// Mouse
@@ -91,9 +94,7 @@
 				var pickResult = scene.pick(scene.pointerX, scene.pointerY);
 
 				if (pickResult.hit) {
-					var diffX = pickResult.pickedPoint.x - object.position.x;
-					var diffY = pickResult.pickedPoint.z - object.position.z;
-					object.rotation = new BABYLON.Vector3(0, Math.atan2(diffX,diffY), 0);
+					object.rotation = getAnglePointingAt(pickResult.pickedPoint, object.position);
 				}	
 			}
 
@@ -135,29 +136,31 @@
 			// Animations
 			var time = 0;
 			var prevRay;
+			var speed = 10;
 			scene.registerBeforeRender(function () {
 				bullets.forEach(bullet => bullet.position = bullet.position.add(sphere.aimDirection.scale(.5)));
+				enemies.forEach(enemy => enemy.rotation = getAnglePointingAt(enemy.position, sphere.position));
 				sphere.physicsImpostor.setLinearVelocity(sphere.physicsImpostor.getLinearVelocity().scale(.99))
 				gl.intensity = Math.cos(time) + 1;
 				if (prevRay) prevRay.hide(scene);
 				prevRay = castRay(sphere);
 				
 				if (map["w"] || map["W"]) {
-					pulse(sphere, new BABYLON.Vector3(-1, 0, 0));
+					pulse(sphere, new BABYLON.Vector3(-speed, 0, 0));
 				}
 				
 				if ((map["a"] || map["A"])) {
-					pulse(sphere, new BABYLON.Vector3(0, 0, -1));
+					pulse(sphere, new BABYLON.Vector3(0, 0, -speed));
 				}
 				
 				if ((map["s"] || map["S"])) {
-					pulse(sphere, new BABYLON.Vector3(1, 0, 0));
+					pulse(sphere, new BABYLON.Vector3(speed, 0, 0));
 				}
 				
 				if ((map["d"] || map["D"])) {
-					pulse(sphere, new BABYLON.Vector3(0, 0, 1));
+					pulse(sphere, new BABYLON.Vector3(0, 0, speed));
 				}
-				
+
 				time += .1;
 			});
 

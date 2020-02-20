@@ -58,8 +58,16 @@ var makeBasicShooter = (scene, x, y, z, r, color) => {
 	return shooter;
 }
 
-var makeShooter = (scene, x, y, z, r, color) => {	
-	return addPhysics(makeSphere(scene, x, y, z, r, color), r);
+var makeNuisance = (scene, x, y, z, r, color) => {	
+	var shooter = addPhysics(makeSphere(scene, x, y, z, r, color), r);
+	var leftAngle = 4*Math.PI/3;
+	var rightAngle = 5*Math.PI/3;
+	var left = makeSphere(scene, 3*Math.cos(leftAngle), 0, 3*Math.sin(leftAngle), r/2, color);
+	var right = makeSphere(scene, 3*Math.cos(rightAngle), 0, 3*Math.sin(rightAngle), r/2, color);
+	left.parent = shooter;
+	right.parent = shooter;
+
+	return shooter;
 }
 
 // Bullet
