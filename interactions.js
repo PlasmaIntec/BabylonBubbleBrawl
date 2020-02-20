@@ -1,12 +1,7 @@
 // Keyboard Interactions
-var addKeyboardInteractions = (scene, sphere, physicsHelper) => {
-	scene.actionManager = new BABYLON.ActionManager(scene);
+var addKeyboardInteractions = (scene, sphere, physicsHelper, map) => {
 	var interactions = [
-		[' ', () => fireBullet(sphere, physicsHelper)], 
-		['w', () => pulse(sphere, new BABYLON.Vector3(-10, 0, 0))], 
-		['a', () => pulse(sphere, new BABYLON.Vector3(0, 0, -10))], 
-		['s', () => pulse(sphere, new BABYLON.Vector3(10, 0, 0))], 
-		['d', () => pulse(sphere, new BABYLON.Vector3(0, 0, 10))], 
+		[' ', () => fireBullet(sphere, physicsHelper)]
 	]
 	interactions.forEach(interaction => {
 		var [key, action] = interaction;
@@ -20,6 +15,14 @@ var addKeyboardInteractions = (scene, sphere, physicsHelper) => {
 			)
 		)
 	})
+
+	scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
+		map[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown";
+	}));
+
+	scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
+		map[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown";
+	}));
 }
 
 // Impulse
