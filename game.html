@@ -42,6 +42,7 @@
 	<script src="helpers.js"></script>
 	<script src="meshGenerators.js"></script>
 	<script src="interactions.js"></script>
+	<script src="mapTraversal.js"></script>
 	<script>
 		var canvas = document.getElementById("renderCanvas");
 
@@ -61,7 +62,8 @@
 			var physicsHelper = new BABYLON.PhysicsHelper(scene);
 			
 			// Camera
-			var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 200, new BABYLON.Vector3(0, 0, 0), scene);
+			var camera = new BABYLON.UniversalCamera("Camera", new BABYLON.Vector3(0, 200, 0), scene);
+			camera.rotation = new BABYLON.Vector3(Math.PI/2, Math.PI*3/2, 0);
 			camera.attachControl(canvas, true);
 
 			// Light
@@ -71,6 +73,9 @@
 			var gl = new BABYLON.GlowLayer("glow", scene);
 			gl.intensity = 10;
 
+			// Scene Elements
+			var location = { x: 0, z: 0 };
+			var gridSize = 100;
 			makeGround(scene);
 			var sphere = makeBasicShooter(scene, 0, 20, 0, 5, BABYLON.Color3.Green());
 			window.sphere = sphere; // DELETE
@@ -137,6 +142,7 @@
 			var time = 0;
 			var prevRay;
 			var speed = 10;
+			var stillPlaying = false;
 			scene.registerBeforeRender(function () {
 				bullets.forEach(bullet => bullet.position = bullet.position.add(BABYLON.Vector3.Normalize(bullet.direction)));
 				enemies.forEach(enemy => enemy.rotation = getAnglePointingAt(enemy.position, sphere.position));
@@ -161,8 +167,22 @@
 					pulse(sphere, new BABYLON.Vector3(0, 0, speed));
 				}
 
+				if (outOfGrid(sphere, location, gridSize)) {
+					if (!stillPlaying) {
+						stillPlaying = true;
+						var movementDirection = getMovementDirection(sphere, location, gridSize);
+						var movementMagnitude = 100;
+						moveLocation(movementDirection.x * movementMagnitude, movementDirection.z * movementMagnitude, camera, location, gridSize)
+						.then(() => {
+							stillPlaying = false;
+							location.x += movementDirection.x;
+							location.z += movementDirection.z;
+						})
+					}
+				}
+
 				time += .1;
-			});
+			});		
 
 			return scene;
 		}
