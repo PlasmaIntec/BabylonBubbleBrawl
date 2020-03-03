@@ -41,7 +41,7 @@ var fireBullet = (parentMesh, physicsHelper, direction) => {
 	var bullet = makeBullet(scene, bulletPos.x, bulletPos.y, bulletPos.z, 10, bulletColor);
 	bullet.direction = direction;
 	var bulletIndex = bullets.push(bullet) - 1;
-	setTimeout(() => {
+	var cancel = setTimeout(() => {
 		bullet.dispose();
 		var event = physicsHelper.applyRadialExplosionForce( // or .applyRadialExplosionForce
 			bullet.position,
@@ -59,4 +59,8 @@ var fireBullet = (parentMesh, physicsHelper, direction) => {
 			event.dispose(); // we need to cleanup/dispose, after we don't use the data anymore
 		}, 1500, debugData);
 	}, 2000)
+	bullet.cancel = () => {
+		bullet.dispose();
+		clearTimeout(cancel);
+	}
 }

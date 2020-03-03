@@ -10,8 +10,9 @@ var addGlow = (mesh, color) => {
 }
 
 // Ground
-var makeGround = (scene) => {
+var makeGround = (scene, x, y, z) => {
 	var ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 1, scene, false);
+	ground.position = new BABYLON.Vector3(x, y, z);
 	var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
 	groundMaterial.specularColor = BABYLON.Color3.Black();
 	ground.material = groundMaterial;
@@ -67,25 +68,35 @@ var makeNuisance = (scene, x, y, z, r, color, player, physicsHelper) => {
 	left.parent = shooter;
 	right.parent = shooter;
 
+	shooter.actions = {};
+
 	var fireAtWill = () => {
 		var time = 5000*Math.random();
-		setTimeout(() => {
+		var cancel = setTimeout(() => {
 			fireBullet(shooter, physicsHelper, player.position.subtract(shooter.position));
 			fireAtWill();
 		}, time);
+		shooter.actions.fire = cancel;
 	}
 
 	var moveAtWill = () => {
 		var time = 1000*Math.random();
 		var direction = new BABYLON.Vector3(20*Math.random()-10, 0, 20*Math.random()-10);
-		setTimeout(() => {
+		var cancel = setTimeout(() => {
 			pulse(shooter, direction);
 			moveAtWill();
 		}, time);
+		shooter.actions.move = cancel;
 	}
 
 	fireAtWill();
 	moveAtWill();
+
+	shooter.cancelActions = () => {
+		for (action in shooter.actions) {
+			clearTimeout(shooter.actions[action]);
+		}
+	}
 
 	return shooter;
 }

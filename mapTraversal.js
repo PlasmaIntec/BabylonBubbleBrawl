@@ -19,7 +19,7 @@ var outOfGrid = (sphere, location, gridSize) => {
 	sphere.position.z > location.z*gridSize + gridSize/2 || sphere.position.z < location.z*gridSize - gridSize/2);
 }
 
-var moveLocation = (x, z, camera, location, gridSize) => new Promise((resolve) => {							
+var moveLocation = (x, z, object, location, gridSize) => new Promise((resolve) => {							
 	var frameRate = 60;
 
 	var movein = new BABYLON.Animation(
@@ -44,7 +44,17 @@ var moveLocation = (x, z, camera, location, gridSize) => new Promise((resolve) =
 
 	movein.setKeys(movein_keys);
 
-	scene.beginDirectAnimation(camera, [movein], 0, 5 * frameRate, false, 1, () => { 
+	scene.beginDirectAnimation(object, [movein], 0, 5 * frameRate, false, 1, () => { 
 		resolve();
 	});
 })
+
+var generateNewGrid = (location, gridSize, gridElements, enemies, physicsHelper) => {
+	var originX = location.x * gridSize;
+	var originZ = location.z * gridSize;
+	var ground = makeGround(scene, originX, 0, originZ);
+	gridElements.push(ground);
+	var enemy = makeNuisance(scene, originX + 50*Math.random(), 20, originZ + 50*Math.random(), 5, BABYLON.Color3.Blue(), sphere, physicsHelper);
+	enemies.push(enemy);
+	gridElements.push(enemy);
+}
