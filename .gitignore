@@ -1,3 +1,7 @@
 Documentation
 *.jpg
 *.jpeg
+*.blend*
+*.babylon*
+*.log
+*.xcf
