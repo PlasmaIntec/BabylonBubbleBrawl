@@ -55,6 +55,7 @@ var generateNewGrid = (location, gridSize, gridElements, enemies, physicsHelper)
 	var ground = makeGround(scene, originX, 0, originZ);
 	gridElements.push(ground);
 	var enemy = makeNuisance(scene, originX + 50*Math.random(), 20, originZ + 50*Math.random(), 5, BABYLON.Color3.Blue(), sphere, physicsHelper);
+	enemy.enemyIndex = enemies.length;
 	enemies.push(enemy);
 	gridElements.push(enemy);
 }

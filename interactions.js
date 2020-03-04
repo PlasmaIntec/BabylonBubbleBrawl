@@ -2,7 +2,7 @@
 var addKeyboardInteractions = (scene, sphere, physicsHelper, map) => {
 	var interactions = [
 		[' ', () => { 
-			fireBullet(sphere, physicsHelper, sphere.aimDirection)
+			fireBullet(sphere, physicsHelper, sphere.aimDirection, true)
 		}]
 	]
 	interactions.forEach(interaction => {
@@ -34,13 +34,15 @@ var pulse = (object, direction) => {
 
 // Bullet Mechanics
 var bullets = [];
-var fireBullet = (parentMesh, physicsHelper, direction) => {
+var fireBullet = (parentMesh, physicsHelper, direction, isFriendly) => {
 	var mesh = parentMesh.source || parentMesh;
 	var bulletColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
 	var bulletPos = mesh.position.clone();
-	var bullet = makeBullet(scene, bulletPos.x, bulletPos.y, bulletPos.z, 10, bulletColor);
+	var bullet = makeBullet(scene, bulletPos.x, bulletPos.y, bulletPos.z, 10, bulletColor, isFriendly);
 	bullet.direction = direction;
-	var bulletIndex = bullets.push(bullet) - 1;
+	var bulletIndex = bullets.length;
+	bullet.bulletIndex = bulletIndex;
+	bullets.push(bullet);
 	var cancel = setTimeout(() => {
 		bullet.dispose();
 		var event = physicsHelper.applyRadialExplosionForce( // or .applyRadialExplosionForce

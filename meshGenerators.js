@@ -73,7 +73,7 @@ var makeNuisance = (scene, x, y, z, r, color, player, physicsHelper) => {
 	var fireAtWill = () => {
 		var time = 5000*Math.random();
 		var cancel = setTimeout(() => {
-			fireBullet(shooter, physicsHelper, player.position.subtract(shooter.position));
+			fireBullet(shooter, physicsHelper, player.position.subtract(shooter.position), false);
 			fireAtWill();
 		}, time);
 		shooter.actions.fire = cancel;
@@ -97,11 +97,26 @@ var makeNuisance = (scene, x, y, z, r, color, player, physicsHelper) => {
 			clearTimeout(shooter.actions[action]);
 		}
 	}
+	
+	shooter.health = 10;
+	var takeDamage = damage => {
+		shooter.health -= damage;
+		if (shooter.health < 0) {
+			shooter.cancelActions();
+			shooter.dispose();
+			return true;
+		}
+		return false;
+	}
+	shooter.takeDamage = takeDamage;
 
 	return shooter;
 }
 
 // Bullet
-var makeBullet = (scene, x, y, z, r, color) => {
-	return addGlow(makeSphere(scene, x, y, z, r, color), color);
+var makeBullet = (scene, x, y, z, r, color, isFriendly) => {
+	var bullet = addGlow(makeSphere(scene, x, y, z, r, color), color);
+	bullet.isFriendly = isFriendly;
+
+	return bullet;
 }

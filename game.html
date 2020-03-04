@@ -65,6 +65,33 @@
 			var camera = new BABYLON.UniversalCamera("Camera", new BABYLON.Vector3(0, 200, 0), scene);
 			camera.rotation = new BABYLON.Vector3(Math.PI/2, Math.PI*3/2, 0);
 			camera.attachControl(canvas, true);
+			
+			// GUI
+			var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+			var healthText = new BABYLON.GUI.InputText();
+			healthText.width = "150px"
+			healthText.height = "40px";
+			healthText.color = "white";
+			healthText.cornerRadius = 20;
+			healthText.background = "green";
+			healthText.left = "-400px";
+			healthText.top = "350px";
+			window.healthText = healthText;
+			
+			advancedTexture.addControl(healthText);  
+			
+			var health = 100;
+			healthText.text = `hp: ${health}`;
+
+			var updateHealthText = health => {
+				healthText.text = `hp: ${health}`;
+			}
+
+			var subtractHealth = subtract => {
+				health -= subtract;
+				updateHealthText(health);
+			}
 
 			// Light
 			var light = new BABYLON.PointLight("omni", new BABYLON.Vector3(0, 50, 0), scene);
@@ -79,8 +106,6 @@
 			var sphere = makeBasicShooter(scene, 0, 20, 0, 5, BABYLON.Color3.Green());
 			window.sphere = sphere; // DELETE
 			var gridElements = [];
-			var ground = makeGround(scene, 0, 0, 0);
-			gridElements.push(ground);
 			sphere.aimDirection = new BABYLON.Vector3(1,0,0);
 			for (var x = 20; x < 40; x += 4) {
 				for (var y = 10; y < 30; y += 4) {
@@ -91,9 +116,7 @@
 				}
 			}
 			var enemies = [];
-			var enemy = makeNuisance(scene, -20, 20, 0, 5, BABYLON.Color3.Blue(), sphere, physicsHelper);
-			enemies.push(enemy);
-			gridElements.push(enemy);
+			generateNewGrid(location, gridSize, gridElements, enemies, physicsHelper);
 
 			var map = {}; // object for multiple key presses
 			addKeyboardInteractions(scene, sphere, physicsHelper, map)
@@ -148,7 +171,24 @@
 			var speed = 10;
 			var stillPlaying = false;
 			scene.registerBeforeRender(function () {
-				bullets.forEach(bullet => bullet.position = bullet.position.add(BABYLON.Vector3.Normalize(bullet.direction)));
+				bullets.forEach(bullet => {
+					bullet.position = bullet.position.add(BABYLON.Vector3.Normalize(bullet.direction));
+					if (bullet.isFriendly) {
+						enemies.forEach(enemy => {
+							if (bullet.intersectsMesh(enemy, false)) {
+								bullet.cancel();
+								bullets.pop(bullet.bulletIndex);
+								if (enemy.takeDamage(20)) { // enemy dies
+									enemies.pop(enemy.enemyIndex);
+								}
+							}
+						})
+					} else if (bullet.intersectsMesh(sphere, false)) {
+						subtractHealth(10);
+						bullet.cancel();
+						bullets.pop(bullet.bulletIndex);
+					}
+				});
 				enemies.forEach(enemy => enemy.rotation = getAnglePointingAt(enemy.position, sphere.position));
 				sphere.physicsImpostor.setLinearVelocity(sphere.physicsImpostor.getLinearVelocity().scale(.99))
 				gl.intensity = Math.cos(time) + 1;
