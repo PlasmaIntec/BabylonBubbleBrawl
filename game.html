@@ -76,22 +76,39 @@
 			healthText.cornerRadius = 20;
 			healthText.background = "green";
 			healthText.left = "-400px";
-			healthText.top = "350px";
-			window.healthText = healthText;
+			healthText.top = "330px";
+
+			var experienceText = new BABYLON.GUI.InputText();
+			experienceText.width = "150px"
+			experienceText.height = "40px";
+			experienceText.color = "white";
+			experienceText.cornerRadius = 20;
+			experienceText.background = "purple";
+			experienceText.left = "-400px";
+			experienceText.top = "380px";
 			
 			advancedTexture.addControl(healthText);  
+			advancedTexture.addControl(experienceText);  
 			
 			var health = 100;
-			healthText.text = `hp: ${health}`;
-
 			var updateHealthText = health => {
 				healthText.text = `hp: ${health}`;
 			}
-
 			var subtractHealth = subtract => {
 				health -= subtract;
 				updateHealthText(health);
 			}
+			updateHealthText(health); 
+			
+			var experience = 0;
+			var updateExperienceText = experience => {
+				experienceText.text = `exp: ${experience}`;
+			}
+			var addExperience = add => {
+				experience += add;
+				updateExperienceText(experience);
+			}
+			updateExperienceText(experience);
 
 			// Light
 			var light = new BABYLON.PointLight("omni", new BABYLON.Vector3(0, 50, 0), scene);
@@ -180,6 +197,7 @@
 								bullets.pop(bullet.bulletIndex);
 								if (enemy.takeDamage(20)) { // enemy dies
 									enemies.pop(enemy.enemyIndex);
+									addExperience(1);
 								}
 							}
 						})
