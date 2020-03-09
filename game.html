@@ -87,8 +87,30 @@
 			experienceText.left = "-400px";
 			experienceText.top = "380px";
 			
+			var evolutions = [
+				["speed", "yellow"],
+				["power", "red"],
+				["health", "orange"],
+			]
+			var evolutionButtons = [];
+
+			evolutions.forEach((evolution, index) => {
+				var [name, color] = evolution;
+				var button = BABYLON.GUI.Button.CreateSimpleButton(name, name);
+				button.width = "60px"
+				button.height = "40px";
+				button.left = "-400px";
+				button.top = `${280 - 50*index}px`
+				button.color = "white";
+				button.background = color;
+				button.isVisible = false;
+				button.action = () => console.log(name)
+				evolutionButtons.push(button);
+				advancedTexture.addControl(button);   
+			})
+			
 			advancedTexture.addControl(healthText);  
-			advancedTexture.addControl(experienceText);  
+			advancedTexture.addControl(experienceText);   
 			
 			var health = 100;
 			var updateHealthText = health => {
@@ -97,6 +119,7 @@
 			var subtractHealth = subtract => {
 				health -= subtract;
 				updateHealthText(health);
+				return health;
 			}
 			updateHealthText(health); 
 			
@@ -107,6 +130,7 @@
 			var addExperience = add => {
 				experience += add;
 				updateExperienceText(experience);
+				return experience;
 			}
 			updateExperienceText(experience);
 
@@ -197,7 +221,15 @@
 								bullets.pop(bullet.bulletIndex);
 								if (enemy.takeDamage(20)) { // enemy dies
 									enemies.pop(enemy.enemyIndex);
-									addExperience(1);
+									if (addExperience(1) > 0) {
+										evolutionButtons.forEach(button => {
+											button.isVisible = true
+											button.onPointerClickObservable.add(() => {
+												button.action();
+												evolutionButtons.forEach(button => button.isVisible = false);
+											})
+										})
+									}
 								}
 							}
 						})
