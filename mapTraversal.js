@@ -58,4 +58,9 @@ var generateNewGrid = (location, gridSize, gridElements, enemies, physicsHelper)
 	enemy.enemyIndex = enemies.length;
 	enemies.push(enemy);
 	gridElements.push(enemy);
+
+	var enemy = makeFoster(scene, originX + 50*Math.random(), 20, originZ + 50*Math.random(), 10, BABYLON.Color3.Blue(), sphere, physicsHelper);
+	enemy.enemyIndex = enemies.length;
+	enemies.push(enemy);
+	gridElements.push(enemy);
 }

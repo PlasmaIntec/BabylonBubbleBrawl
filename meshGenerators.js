@@ -59,6 +59,7 @@ var makeBasicShooter = (scene, x, y, z, r, color) => {
 	return shooter;
 }
 
+// Basic Enemy
 var makeNuisance = (scene, x, y, z, r, color, player, physicsHelper) => {	
 	var shooter = addPhysics(makeSphere(scene, x, y, z, r, color), r);
 	var leftAngle = 4*Math.PI/3;
@@ -110,8 +111,88 @@ var makeNuisance = (scene, x, y, z, r, color, player, physicsHelper) => {
 	}
 	shooter.takeDamage = takeDamage;
 
+	shooter.passiveMove = (sphere) => {
+		shooter.rotation = getAnglePointingAt(shooter.position, sphere.position)
+	}
+
 	return shooter;
 }
+
+var makeFosterCylinder = (scene, x, y, z, r, color) => {
+	var canMaterial = new BABYLON.StandardMaterial("material", scene);
+	canMaterial.diffuseTexture = new BABYLON.Texture("https://avatars1.githubusercontent.com/u/1577872?s=400&v=4", scene)
+	
+	var faceUV = [];
+	faceUV[0] =	new BABYLON.Vector4(0, 0, 0, 0);
+    faceUV[1] =	new BABYLON.Vector4(1, 0, 0.32, 1);
+
+    var faceColors = [ ];
+    faceColors[0] = new BABYLON.Color4(0.5, 0.5, 0.5, 1)
+	
+	var can = BABYLON.MeshBuilder.CreateCylinder("can", {diameter: r, height:1, faceUV: faceUV, faceColors: faceColors}, scene);
+	can.material = canMaterial;
+	can.position = new BABYLON.Vector3(x, y, z);
+
+	return can;
+}
+
+// Foster Enemy
+var makeFoster = (scene, x, y, z, r, color, player, physicsHelper) => {	
+	var shooter = addPhysics(makeFosterCylinder(scene, x, y, z, r, color), r);
+
+	shooter.actions = {};
+
+	var fireAtWill = () => {
+		var time = 5000*Math.random();
+		var cancel = setTimeout(() => {
+			fireBullet(shooter, physicsHelper, player.position.subtract(shooter.position), false);
+			fireAtWill();
+		}, time);
+		shooter.actions.fire = cancel;
+	}
+
+	var moveAtWill = () => {
+		var time = 1000*Math.random();
+		var direction = new BABYLON.Vector3(20*Math.random()-10, 0, 20*Math.random()-10);
+		var cancel = setTimeout(() => {
+			pulse(shooter, direction);
+			moveAtWill();
+		}, time);
+		shooter.actions.move = cancel;
+	}
+
+	fireAtWill();
+	// moveAtWill();
+
+	shooter.cancelActions = () => {
+		for (action in shooter.actions) {
+			clearTimeout(shooter.actions[action]);
+		}
+	}
+	
+	shooter.health = 10;
+	var takeDamage = damage => {
+		shooter.health -= damage;
+		if (shooter.health < 0) {
+			for (var i = 0; i < 2*Math.PI; i += Math.PI/4) {
+				fireBullet(shooter, physicsHelper, new BABYLON.Vector3(Math.cos(i), 0, Math.sin(i)), false);
+			}
+			shooter.cancelActions();
+			shooter.dispose();
+			return true;
+		}
+		return false;
+	}
+	shooter.takeDamage = takeDamage;
+
+	shooter.passiveMove = (sphere) => {
+		var randomRotation = new BABYLON.Vector3(.1*Math.random(), .1*Math.random(), .1*Math.random());
+		shooter.rotation = shooter.rotation.add(randomRotation)
+	}
+
+	return shooter;
+}
+
 
 // Bullet
 var makeBullet = (scene, x, y, z, r, color, isFriendly) => {

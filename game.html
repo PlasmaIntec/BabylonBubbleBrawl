@@ -239,7 +239,7 @@
 						bullets.pop(bullet.bulletIndex);
 					}
 				});
-				enemies.forEach(enemy => enemy.rotation = getAnglePointingAt(enemy.position, sphere.position));
+				enemies.forEach(enemy => enemy.passiveMove(sphere));
 				sphere.physicsImpostor.setLinearVelocity(sphere.physicsImpostor.getLinearVelocity().scale(.99))
 				gl.intensity = Math.cos(time) + 1;
 				if (prevRay) prevRay.hide(scene);
