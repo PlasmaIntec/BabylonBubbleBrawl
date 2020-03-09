@@ -1,3 +1,3 @@
 # BabylonBubbleBrawl
 
-Game in game/game.html
+Game in game.html
