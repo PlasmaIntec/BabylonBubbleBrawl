@@ -88,15 +88,15 @@
 			experienceText.left = "-400px";
 			experienceText.top = "380px";
 			
-			var evolutions = [
+			var statBuffs = [
 				["speed", "yellow"],
 				["power", "red"],
 				["health", "orange"],
 			]
-			var evolutionButtons = [];
+			var statBuffButtons = [];
 
-			evolutions.forEach((evolution, index) => {
-				var [name, color] = evolution;
+			statBuffs.forEach((statBuff, index) => {
+				var [name, color] = statBuff;
 				var button = BABYLON.GUI.Button.CreateSimpleButton(name, name);
 				button.width = "60px"
 				button.height = "40px";
@@ -106,8 +106,31 @@
 				button.background = color;
 				button.isVisible = false;
 				button.action = () => console.log(name)
-				evolutionButtons.push(button);
+				statBuffButtons.push(button);
 				advancedTexture.addControl(button);   
+			})
+
+			var evolutions = [
+				["berserker", "red"],
+				["sniper", "cyan"],
+				["striker", "purple"]
+			];
+			var evolutionButtons = [];
+
+			evolutions.forEach((evolution, index) => {
+				var [name, color] = evolution;
+				var button = BABYLON.GUI.Button.CreateSimpleButton(name, name);
+				button.width = "120px"
+				button.height = "80px";
+				button.left = `${150*index - 150}px`;
+				button.top = "355px";
+				button.color = "white";
+				button.background = color;
+				button.isVisible = false;
+				button.action = () => console.log(name)
+
+				evolutionButtons.push(button);
+				advancedTexture.addControl(button); 
 			})
 			
 			advancedTexture.addControl(healthText);  
@@ -222,12 +245,25 @@
 								bullets.pop(bullet.bulletIndex);
 								if (enemy.takeDamage(20)) { // enemy dies
 									enemies.pop(enemy.enemyIndex);
-									if (addExperience(1) > 0) {
+									if (addExperience(1) > 0) {				
 										evolutionButtons.forEach(button => {
-											button.isVisible = true
+											button.isVisible = true;				
+											button.onPointerEnterObservable.add(() => {
+												button.alpha = 1;
+											})
+											button.onPointerOutObservable.add(() => {
+												button.alpha = .5;
+											})
 											button.onPointerClickObservable.add(() => {
 												button.action();
 												evolutionButtons.forEach(button => button.isVisible = false);
+											})
+										})
+										statBuffButtons.forEach(button => {
+											button.isVisible = true
+											button.onPointerClickObservable.add(() => {
+												button.action();
+												statBuffButtons.forEach(button => button.isVisible = false);
 											})
 										})
 									}
