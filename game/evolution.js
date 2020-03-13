@@ -30,13 +30,29 @@ var evolveBerserker = sphere => {
 	
 	blade.isFriendly = true;
 	blade.direction = new BABYLON.Vector3(0, 0, 0);
-	var bulletIndex = bullets.length;
-	blade.bulletIndex = bulletIndex;
-	bullets.push(blade);
-
 	blade.cancel = () => {}; // blade does not die
+	
+	var bulletIndex = uniqueId++;
+	blade.bulletIndex = bulletIndex;
+	bullets[bulletIndex] = blade;
 
 	blade.parent = sphere;
 
-	// TODO: disable shooting while in berserker mode
+	sphere.fireWeapon = () => {
+		blade.isGrowing = true;
+		blade.update = (time, self) => {
+			var zScalingFactor = self.isGrowing ? self.scaling.z + .1 : self.scaling.z - .1;
+			if (zScalingFactor > 10) {
+				self.isGrowing = false;
+			}
+			if (!self.isGrowing && zScalingFactor < 1) {
+				self.update = () => {};
+				self.isGrowing = true;
+			}
+			var xScalingFactor = .25*Math.cos(time)+.75;
+			self.scaling = new BABYLON.Vector3(xScalingFactor, 1, zScalingFactor);
+		}
+	}; // blade is weapon
+}
+
 }

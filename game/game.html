@@ -49,6 +49,7 @@
 
 		var engine = null;
 		var scene = null;
+		var uniqueId = 0;
 		var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); };
 		var createScene = function () {
 			
@@ -258,14 +259,14 @@
 			var speed = 10;
 			var stillPlaying = false;
 			scene.registerBeforeRender(function () {
-				bullets.forEach(bullet => {
+				Object.keys(bullets).forEach(bulletKey => {
+					var bullet = bullets[bulletKey];
 					bullet.update && bullet.update(time, bullet);
 					bullet.position = bullet.position.add(BABYLON.Vector3.Normalize(bullet.direction));
 					if (bullet.isFriendly) {
 						enemies.forEach(enemy => {
 							if (bullet.intersectsMesh(enemy, false)) {
-								bullet.cancel();
-								bullets.pop(bullet.bulletIndex);
+								bullet.cancel(bullets);
 								if (enemy.takeDamage(20)) { // enemy dies
 									deathSound.play();
 									enemies.pop(enemy.enemyIndex);
@@ -298,8 +299,8 @@
 						sphere.particleSystem.start();
 						setTimeout(() => sphere.particleSystem.stop(), 200);
 						subtractHealth(10);
-						bullet.cancel();
-						bullets.pop(bullet.bulletIndex);
+						bullet.cancel(bullets);
+						delete bullets[bullet.bulletIndex];
 					}
 				});
 
@@ -338,7 +339,7 @@
 						// destroy previous grid
 						gridElements.forEach(e => e.dispose());
 						enemies.forEach(e => e.cancelActions());
-						bullets.forEach(e => e.cancel());
+						Object.keys(bullets).forEach(bulletKey => bullets[bulletKey].cancel(bullets));
 						// procedurally generate new grid
 						generateNewGrid(location, gridSize, gridElements, enemies, physicsHelper);
 					})

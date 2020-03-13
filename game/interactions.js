@@ -37,16 +37,16 @@ var pulse = (object, direction) => {
 }
 
 // Bullet Mechanics
-var bullets = [];
+var bullets = {};
 var fireBullet = (parentMesh, physicsHelper, direction, isFriendly) => {
 	var mesh = parentMesh.source || parentMesh;
 	var bulletColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
 	var bulletPos = mesh.position.clone();
 	var bullet = makeBullet(scene, bulletPos.x, bulletPos.y, bulletPos.z, 10, bulletColor, isFriendly);
 	bullet.direction = direction;
-	var bulletIndex = bullets.length;
+	var bulletIndex = uniqueId++;
 	bullet.bulletIndex = bulletIndex;
-	bullets.push(bullet);
+	bullets[bulletIndex] = bullet;
 	var cancel = setTimeout(() => {
 		bullet.dispose();
 		var event = physicsHelper.applyRadialExplosionForce( // or .applyRadialExplosionForce
@@ -65,7 +65,8 @@ var fireBullet = (parentMesh, physicsHelper, direction, isFriendly) => {
 			event.dispose(); // we need to cleanup/dispose, after we don't use the data anymore
 		}, 1500, debugData);
 	}, 2000)
-	bullet.cancel = () => {
+	bullet.cancel = (bullets) => {
+		delete bullets[bullet.bulletIndex];
 		bullet.dispose();
 		clearTimeout(cancel);
 	}
@@ -76,13 +77,14 @@ var fireHomework = (parentMesh, physicsHelper, direction, isFriendly) => {
 	var homeworkPos = mesh.position.clone();
 	var homework = makeHomework(scene, homeworkPos.x, homeworkPos.y, homeworkPos.z, 10, new BABYLON.Color3.White(), isFriendly);
 	homework.direction = direction;
-	var bulletIndex = bullets.length;
+	var bulletIndex = uniqueId++;
 	homework.bulletIndex = bulletIndex;
-	bullets.push(homework);
+	bullets[bulletIndex] = homework;
 	var cancel = setTimeout(() => {
 		homework.dispose();
 	}, 2000)
-	homework.cancel = () => {
+	homework.cancel = (bullets) => {
+		delete bullets[homework.bulletIndex];
 		homework.disposeSprite();
 		homework.dispose();
 		clearTimeout(cancel);
