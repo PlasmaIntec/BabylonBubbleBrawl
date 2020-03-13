@@ -1,8 +1,8 @@
 // Keyboard Interactions
 var addKeyboardInteractions = (scene, sphere, physicsHelper, map) => {
 	var interactions = [
-		[' ', () => { 
-			fireBullet(sphere, physicsHelper, sphere.aimDirection, true)
+		[' ', () => {
+			sphere.fireWeapon();
 		}]
 	]
 	interactions.forEach(interaction => {
@@ -27,7 +27,7 @@ var addKeyboardInteractions = (scene, sphere, physicsHelper, map) => {
 	}));
 	
 	window.addEventListener("click", () => {
-		fireBullet(sphere, physicsHelper, sphere.aimDirection, true);
+		sphere.fireWeapon();
 	})
 }
 
