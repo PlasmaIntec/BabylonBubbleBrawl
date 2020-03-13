@@ -21,4 +21,22 @@ var evolveSniper = sphere => {
 		tailMeshes.push(tail);
 	}
 	tailMeshes.forEach(tail => tail.parent = sphere);
+
+	// TODO: increase bullet potency + range
+}
+
+var evolveBerserker = sphere => {
+	var blade = makeSphere(scene, 0, 0, -5, sphere.radius, BABYLON.Color3.Red());
+	
+	blade.isFriendly = true;
+	blade.direction = new BABYLON.Vector3(0, 0, 0);
+	var bulletIndex = bullets.length;
+	blade.bulletIndex = bulletIndex;
+	bullets.push(blade);
+
+	blade.cancel = () => {}; // blade does not die
+
+	blade.parent = sphere;
+
+	// TODO: disable shooting while in berserker mode
 }

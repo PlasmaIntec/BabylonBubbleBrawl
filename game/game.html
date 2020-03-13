@@ -114,7 +114,7 @@
 			})
 
 			var evolutions = [
-				["berserker", "red", () => {}],
+				["berserker", "red", evolveBerserker],
 				["sniper", "cyan", evolveSniper],
 				["striker", "purple", () => {}]
 			];
@@ -180,7 +180,8 @@
 			window.sphere = sphere; // DELETE
 			var gridElements = [];
 			sphere.aimDirection = new BABYLON.Vector3(1,0,0);
-			sphere.evolve = () => evolveSniper(sphere);
+			sphere.evolve = () => evolveSniper(sphere); // DELETE
+			evolveBerserker(sphere); // DELETE
 			sphere.getChildren().forEach(child => {
 				child.update = (time, self) => {
 					var scalingFactor = .25*Math.cos(time)+.75;
