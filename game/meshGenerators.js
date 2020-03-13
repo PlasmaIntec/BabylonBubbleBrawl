@@ -198,7 +198,7 @@ var makeFoster = (scene, x, y, z, r, color, player, physicsHelper) => {
 	var fireAtWill = () => {
 		var time = 5000*Math.random();
 		var cancel = setTimeout(() => {
-			fireBullet(shooter, physicsHelper, player.position.subtract(shooter.position), false);
+			fireHomework(shooter, physicsHelper, player.position.subtract(shooter.position), false);
 			fireAtWill();
 		}, time);
 		shooter.actions.fire = cancel;
@@ -228,7 +228,7 @@ var makeFoster = (scene, x, y, z, r, color, player, physicsHelper) => {
 		shooter.health -= damage;
 		if (shooter.health < 0) {
 			for (var i = 0; i < 2*Math.PI; i += Math.PI/4) {
-				fireBullet(shooter, physicsHelper, new BABYLON.Vector3(Math.cos(i), 0, Math.sin(i)), false);
+				fireHomework(shooter, physicsHelper, new BABYLON.Vector3(Math.cos(i), 0, Math.sin(i)), false);
 			}
 			shooter.cancelActions();
 			shooter.dispose();
@@ -253,4 +253,23 @@ var makeBullet = (scene, x, y, z, r, color, isFriendly) => {
 	bullet.isFriendly = isFriendly;
 
 	return bullet;
+}
+
+var makeHomework = (scene, x, y, z, r, color, isFriendly) => {
+	var homework = makeSphere(scene, x, y, z, r, color);
+	homework.isFriendly = isFriendly;
+
+	// Sprite
+	var link = "https://i.imgur.com/27jBQDR.png";
+	var spriteManagerPlayer = new BABYLON.SpriteManager("playerManager",link, 100, 500, scene);
+	var sprite = new BABYLON.Sprite("sprite", spriteManagerPlayer);
+	sprite.position = homework.position;
+	sprite.width = 12;
+	sprite.height = 12;
+
+	homework.isVisible = false;
+	homework.update = (time, self) => sprite.position = self.position;
+	homework.disposeSprite = () => sprite.dispose();
+
+	return homework;
 }

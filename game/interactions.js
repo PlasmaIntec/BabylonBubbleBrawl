@@ -66,3 +66,21 @@ var fireBullet = (parentMesh, physicsHelper, direction, isFriendly) => {
 		clearTimeout(cancel);
 	}
 }
+
+var fireHomework = (parentMesh, physicsHelper, direction, isFriendly) => {
+	var mesh = parentMesh.source || parentMesh;
+	var homeworkPos = mesh.position.clone();
+	var homework = makeHomework(scene, homeworkPos.x, homeworkPos.y, homeworkPos.z, 10, new BABYLON.Color3.White(), isFriendly);
+	homework.direction = direction;
+	var bulletIndex = bullets.length;
+	homework.bulletIndex = bulletIndex;
+	bullets.push(homework);
+	var cancel = setTimeout(() => {
+		homework.dispose();
+	}, 2000)
+	homework.cancel = () => {
+		homework.disposeSprite();
+		homework.dispose();
+		clearTimeout(cancel);
+	}
+}

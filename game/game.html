@@ -284,6 +284,7 @@
 			var stillPlaying = false;
 			scene.registerBeforeRender(function () {
 				bullets.forEach(bullet => {
+					bullet.update && bullet.update(time, bullet);
 					bullet.position = bullet.position.add(BABYLON.Vector3.Normalize(bullet.direction));
 					if (bullet.isFriendly) {
 						enemies.forEach(enemy => {
