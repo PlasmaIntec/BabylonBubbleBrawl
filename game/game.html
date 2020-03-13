@@ -114,14 +114,14 @@
 			})
 
 			var evolutions = [
-				["berserker", "red"],
-				["sniper", "cyan"],
-				["striker", "purple"]
+				["berserker", "red", () => {}],
+				["sniper", "cyan", evolveSniper],
+				["striker", "purple", () => {}]
 			];
 			var evolutionButtons = [];
 
 			evolutions.forEach((evolution, index) => {
-				var [name, color] = evolution;
+				var [name, color, evolutionFunction] = evolution;
 				var button = BABYLON.GUI.Button.CreateSimpleButton(name, name);
 				button.width = "120px"
 				button.height = "80px";
@@ -130,7 +130,11 @@
 				button.color = "white";
 				button.background = color;
 				button.isVisible = false;
-				button.action = () => console.log(name)
+				button.alpha = .5;
+				button.action = () => {
+					evolutionFunction(sphere);
+					console.log(`taken ${name} evolution`);
+				}
 
 				evolutionButtons.push(button);
 				advancedTexture.addControl(button); 
@@ -176,44 +180,13 @@
 			window.sphere = sphere; // DELETE
 			var gridElements = [];
 			sphere.aimDirection = new BABYLON.Vector3(1,0,0);
-			sphere.evolve = () => {
-				var leftAngle = 4*Math.PI/3;
-				var rightAngle = 5*Math.PI/3;
-				var r = sphere.radius;
-				var color = new BABYLON.Color3.Red();
-				var left = makeSphere(scene, 3*Math.cos(leftAngle), 0, 3*Math.sin(leftAngle), r/2, color);
-				var right = makeSphere(scene, 3*Math.cos(rightAngle), 0, 3*Math.sin(rightAngle), r/2, color);
-				left.parent = sphere;
-				right.parent = sphere;
-			}
+			sphere.evolve = () => evolveSniper(sphere);
 			sphere.getChildren().forEach(child => {
 				child.update = (time, self) => {
 					var scalingFactor = .25*Math.cos(time)+.75;
 					self.scaling = new BABYLON.Vector3(scalingFactor, 1, 1);
 				}
 			})
-			var tailMeshes = [];
-			var tailCount = 5;
-			for (var i = 0; i < tailCount; i++) {
-				var distance = i+tailCount;
-				var tail = makeSphere(scene, 0, 0, distance, sphere.radius-.5*i, BABYLON.Color3.Purple());
-				tail.index = i;
-				tail.distance = distance;
-				tail.update = (time, self) => {
-					var d = self.distance;
-					var logistic = x => Math.PI / (1 + 8*Math.exp(-x+tailCount));
-					var maxAngle = logistic(d);
-					var amplitude = d;
-					var b = maxAngle * Math.sin(time);
-					var x = amplitude * Math.sin(b);
-					var z = amplitude * Math.cos(b);
-					self.position = new BABYLON.Vector3(x, 0, z); // for the swaying tail effect
-					var scalingFactor = .25*Math.cos(2*Math.PI*self.index/tailCount + time)+.75;
-					self.scaling = new BABYLON.Vector3(scalingFactor, 1, scalingFactor); // for the feeling of pulsation
-				}
-				tailMeshes.push(tail);
-			}
-			tailMeshes.forEach(tail => tail.parent = sphere);
 			sphere.update = (time, self) => {
 				var scalingFactor = .1*Math.cos(time)+.9;
 				self.scaling = new BABYLON.Vector3(scalingFactor, 1, scalingFactor);
@@ -330,7 +303,7 @@
 
 				enemies.forEach(enemy => enemy.passiveMove(sphere));
 				sphere.physicsImpostor.setLinearVelocity(sphere.physicsImpostor.getLinearVelocity().scale(.99));
-				sphere.update(time, sphere);
+				sphere.update && sphere.update(time, sphere);
 				gl.intensity = Math.cos(time) + 1;
 				if (prevRay) prevRay.hide(scene);
 				prevRay = castRay(sphere);
