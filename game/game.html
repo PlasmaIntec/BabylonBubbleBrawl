@@ -66,6 +66,9 @@
 			var camera = new BABYLON.UniversalCamera("Camera", new BABYLON.Vector3(0, 200, 0), scene);
 			camera.rotation = new BABYLON.Vector3(Math.PI/2, Math.PI*3/2, 0);
 			camera.attachControl(canvas, true);
+
+			// Sounds
+			var deathSound = new BABYLON.Sound("deathSound", "https://raw.githubusercontent.com/PlasmaIntec/BabylonBubbleBrawl/master/game/roblox-death-sound-effect.mp3", scene);
 			
 			// GUI
 			var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
@@ -274,6 +277,7 @@
 								bullet.cancel();
 								bullets.pop(bullet.bulletIndex);
 								if (enemy.takeDamage(20)) { // enemy dies
+									deathSound.play();
 									enemies.pop(enemy.enemyIndex);
 									if (addExperience(1) > 0) {				
 										evolutionButtons.forEach(button => {
