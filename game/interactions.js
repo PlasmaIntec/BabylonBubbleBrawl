@@ -25,6 +25,10 @@ var addKeyboardInteractions = (scene, sphere, physicsHelper, map) => {
 	scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
 		map[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown";
 	}));
+	
+	window.addEventListener("click", () => {
+		fireBullet(sphere, physicsHelper, sphere.aimDirection, true);
+	})
 }
 
 // Impulse
