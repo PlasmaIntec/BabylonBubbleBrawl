@@ -172,6 +172,7 @@
 			var location = { x: 0, z: 0 };
 			var gridSize = 100;
 			var sphere = makeBasicShooter(scene, 0, 20, 0, 5, BABYLON.Color3.Green());
+			sphere = addParticleSystem(sphere, scene);
 			window.sphere = sphere; // DELETE
 			var gridElements = [];
 			sphere.aimDirection = new BABYLON.Vector3(1,0,0);
@@ -317,7 +318,9 @@
 								}
 							}
 						})
-					} else if (bullet.intersectsMesh(sphere, false)) {
+					} else if (bullet.intersectsMesh(sphere, false)) { // enemy hit player
+						sphere.particleSystem.start();
+						setTimeout(() => sphere.particleSystem.stop(), 200);
 						subtractHealth(10);
 						bullet.cancel();
 						bullets.pop(bullet.bulletIndex);

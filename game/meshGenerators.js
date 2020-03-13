@@ -20,6 +20,59 @@ var makeGround = (scene, x, y, z) => {
 	return ground;
 }
 
+// Particle System
+var addParticleSystem = (mesh, scene) => {
+	// Create a particle system
+	var particleSystem = new BABYLON.ParticleSystem("particles", 200, scene);
+
+	//Texture of each particle
+	particleSystem.particleTexture = new BABYLON.Texture("https://raw.githubusercontent.com/BabylonJS/Babylon.js/master/Playground/textures/flare.png", scene);
+
+	// Where the particles come from
+	particleSystem.emitter = mesh; // the starting object, the emitter
+	// particleSystem.minEmitBox = new BABYLON.Vector3(-1, 0, 0); // Starting all from
+	// particleSystem.maxEmitBox = new BABYLON.Vector3(1, 0, 0); // To...
+
+	// Colors of all particles
+	particleSystem.color1 = new BABYLON.Color4(0.06, 1, 1);
+	particleSystem.color2 = new BABYLON.Color4(0.78, 0.04, 1);
+	particleSystem.colorDead = new BABYLON.Color4(0.04, 0.03, 1);
+
+	// Size of each particle (random between...
+	particleSystem.minSize = 1;
+	particleSystem.maxSize = 5;
+
+	// Life time of each particle (random between...
+	particleSystem.minLifeTime = 0.3;
+	particleSystem.maxLifeTime = 1.5;
+
+	// Emission rate
+	particleSystem.emitRate = 1500;
+
+	// Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
+	particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+
+	// Set the gravity of all particles
+	particleSystem.gravity = new BABYLON.Vector3(0, -9.81, 0);
+
+	// Direction of each particle after it has been emitted
+	particleSystem.direction1 = new BABYLON.Vector3(-7, 0, 3);
+	particleSystem.direction2 = new BABYLON.Vector3(7, 0, -3);
+
+	// Angular speed, in radians
+	particleSystem.minAngularSpeed = 0;
+	particleSystem.maxAngularSpeed = Math.PI;
+
+	// Speed
+	particleSystem.minEmitPower = 1;
+	particleSystem.maxEmitPower = 10;
+	particleSystem.updateSpeed = 0.005;
+
+	mesh.particleSystem = particleSystem;
+
+	return mesh;
+}
+
 // Sphere
 var makeSphere = (scene, x, y, z, r, color) => {
 	var sphere = BABYLON.Mesh.CreateSphere("sphere", 16, r, scene);
