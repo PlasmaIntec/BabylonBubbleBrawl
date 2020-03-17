@@ -26,6 +26,6 @@ var getAnglePointingAt = (from, to) => {
 
 var getVectorTo = (from, to) => {
 	var diffX = to.x - from.x;
-	var diffY = to.z - from.z;
-	return new BABYLON.Vector3(diffX, 0, diffY);
+	var diffZ = to.z - from.z;
+	return new BABYLON.Vector3(diffX, 0, diffZ);
 }
