@@ -55,4 +55,50 @@ var evolveBerserker = sphere => {
 	}; // blade is weapon
 }
 
+var evolveManipulator = sphere => {
+	var missiles = [];
+	setInterval(() => { // regenerate missiles
+		var missile = addGlow(makeSphere(scene, 0, 0, 10, sphere.radius, BABYLON.Color3.Teal()), BABYLON.Color3.Teal());
+		missile.update = (time, self) => {
+			var magnitude = 10;
+			var offset = 2*Math.PI*missiles.indexOf(self)/missiles.length;
+			self.position = new BABYLON.Vector3(magnitude*Math.cos(time+offset), 0, magnitude*Math.sin(time+offset));
+		}
+		missiles.push(missile);
+		missile.parent = sphere;
+	}, 1000)
+
+	sphere.fireWeapon = () => {
+		var activeMissile = missiles.shift();	
+		
+		if (!activeMissile) return;
+	
+		var bulletIndex = uniqueId++;
+		activeMissile.bulletIndex = bulletIndex;
+		bullets[bulletIndex] = activeMissile;
+
+		activeMissile.direction = sphere.aimDirection;
+		activeMissile.isFriendly = true;
+
+		activeMissile.update = (time, self) => {
+			var pickResult = scene.pick(scene.pointerX, scene.pointerY);
+			if (pickResult.hit && pickResult.pickedMesh.id == "ground") {
+				var cursorX = pickResult.pickedPoint.x;
+				var cursorZ = pickResult.pickedPoint.z;
+				var positionIncrement = new BABYLON.Vector3(cursorX, 0, cursorZ);
+				positionIncrement = BABYLON.Vector3.Normalize(getVectorTo(self.position, positionIncrement));
+				self.direction = positionIncrement;
+			}
+			self.position = self.position.add(self.direction);
+		}
+
+		var cancel = setTimeout(() => {
+			activeMissile.dispose();
+		}, 1000)
+		activeMissile.cancel = (bullets) => {
+			delete bullets[activeMissile.bulletIndex];
+			activeMissile.dispose();
+			clearTimeout(cancel);
+		}
+	}
 }
