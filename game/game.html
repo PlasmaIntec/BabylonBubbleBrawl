@@ -203,7 +203,7 @@
 					}
 				}
 			}
-			var enemies = [];
+			var enemies = {};
 			generateNewGrid(location, gridSize, gridElements, enemies, physicsHelper);
 
 			var map = {}; // object for multiple key presses
@@ -264,12 +264,13 @@
 					bullet.update && bullet.update(time, bullet);
 					bullet.position = bullet.position.add(BABYLON.Vector3.Normalize(bullet.direction));
 					if (bullet.isFriendly) {
-						enemies.forEach(enemy => {
+						Object.keys(enemies).forEach(enemyKey => {
+							var enemy = enemies[enemyKey];
 							if (bullet.intersectsMesh(enemy, false)) {
 								bullet.cancel(bullets);
 								if (enemy.takeDamage(20)) { // enemy dies
 									deathSound.play();
-									enemies.pop(enemy.enemyIndex);
+									delete enemies[enemy.enemyIndex];
 									if (addExperience(1) > 0) {				
 										evolutionButtons.forEach(button => {
 											button.isVisible = true;				
@@ -304,7 +305,7 @@
 					}
 				});
 
-				enemies.forEach(enemy => enemy.passiveMove(sphere));
+				Object.keys(enemies).forEach(enemyKey => enemies[enemyKey].passiveMove(sphere));
 				sphere.physicsImpostor.setLinearVelocity(sphere.physicsImpostor.getLinearVelocity().scale(.99));
 				sphere.update && sphere.update(time, sphere);
 				gl.intensity = Math.cos(time) + 1;
@@ -338,7 +339,7 @@
 						location.z += movementDirection.z;
 						// destroy previous grid
 						gridElements.forEach(e => e.dispose());
-						enemies.forEach(e => e.cancelActions());
+						Object.keys(enemies).forEach(enemyKey => enemies[enemyKey].cancelActions());
 						Object.keys(bullets).forEach(bulletKey => bullets[bulletKey].cancel(bullets));
 						// procedurally generate new grid
 						generateNewGrid(location, gridSize, gridElements, enemies, physicsHelper);
