@@ -262,7 +262,7 @@
 				Object.keys(bullets).forEach(bulletKey => {
 					var bullet = bullets[bulletKey];
 					bullet.update && bullet.update(time, bullet);
-					bullet.position = bullet.position.add(BABYLON.Vector3.Normalize(bullet.direction));
+					if (!bullet.isImmobile) bullet.position = bullet.position.add(BABYLON.Vector3.Normalize(bullet.direction));
 					if (bullet.isFriendly) {
 						Object.keys(enemies).forEach(enemyKey => {
 							var enemy = enemies[enemyKey];

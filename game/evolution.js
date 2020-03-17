@@ -22,7 +22,38 @@ var evolveSniper = sphere => {
 	}
 	tailMeshes.forEach(tail => tail.parent = sphere);
 
-	// TODO: increase bullet potency + range
+	var convertCoordinatesToAngle = (direction) => {
+		var x = direction.x;
+		var y = direction.z;
+		var multiplier = x > 0 ? 1 : -1;
+		return Math.acos(y) * multiplier;
+	}
+
+	sphere.fireWeapon = () => {
+		var length = 500;
+		var laser = BABYLON.MeshBuilder.CreateCylinder("laser", {height: length, diameter: 5}, scene);
+		laser = addMaterialToMesh(laser);
+		laser = addGlow(laser, BABYLON.Color3.Red());
+		var angle = convertCoordinatesToAngle(sphere.aimDirection);
+		laser.position = sphere.position.add(new BABYLON.Vector3(length/2*Math.sin(angle), 0, length/2*Math.cos(angle)));
+		laser.rotation = new BABYLON.Vector3(-Math.PI/2, 0, angle);
+
+		laser.isFriendly = true;
+		laser.isImmobile = true;
+
+		var bulletIndex = uniqueId++;
+		laser.bulletIndex = bulletIndex;
+		bullets[bulletIndex] = laser;
+
+		var cancel = setTimeout(() => {
+			laser.dispose();
+		}, 1000)
+		laser.cancel = (bullets) => {
+			delete bullets[laser.bulletIndex];
+			laser.dispose();
+			clearTimeout(cancel);
+		}
+	}
 }
 
 var evolveBerserker = sphere => {
