@@ -1,8 +1,9 @@
 // Helpers
-function addMaterialToMesh(sphere) {
-	var sphereMaterial = new BABYLON.StandardMaterial("sphereMaterial", scene);
-	sphereMaterial.alpha = 0.5;
-	sphere.material = sphereMaterial;
+function addMaterialToMesh(mesh) {
+	var meshMaterial = new BABYLON.StandardMaterial("meshMaterial", scene);
+	meshMaterial.alpha = 0.5;
+	mesh.material = meshMaterial;
+	return mesh;
 }
 
 function showExplosionDebug(data) {
