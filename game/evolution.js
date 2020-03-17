@@ -26,7 +26,7 @@ var evolveSniper = sphere => {
 }
 
 var evolveBerserker = sphere => {
-	var blade = makeSphere(scene, 0, 0, -5, sphere.radius, BABYLON.Color3.Red());
+	var blade = addGlow(makeSphere(scene, 0, 0, -5, sphere.radius, BABYLON.Color3.Red()), BABYLON.Color3.Red());
 	
 	blade.isFriendly = true;
 	blade.direction = new BABYLON.Vector3(0, 0, 0);
