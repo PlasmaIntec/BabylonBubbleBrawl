@@ -170,6 +170,19 @@ var makeNuisance = (scene, x, y, z, r, color, player, physicsHelper) => {
 		shooter.rotation = getAnglePointingAt(shooter.position, sphere.position)
 	}
 
+	shooter.getChildren().forEach(child => {
+		child.update = (time, self) => {
+			var scalingFactor = .25*Math.cos(time)+.75;
+			self.scaling = new BABYLON.Vector3(scalingFactor, 1, 1);
+		}
+	})
+	shooter.update = (time, self) => {
+		var scalingFactor = .1*Math.cos(time)+.9;
+		scalingFactor *= sphere.healthBuff;
+		self.scaling = new BABYLON.Vector3(scalingFactor, 1, scalingFactor);
+		sphere.getChildren().forEach(child => child.update && child.update(time, child));
+	}
+
 	return shooter;
 }
 

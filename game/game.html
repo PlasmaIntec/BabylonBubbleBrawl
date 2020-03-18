@@ -326,7 +326,11 @@
 					}
 				});
 
-				Object.keys(enemies).forEach(enemyKey => enemies[enemyKey].passiveMove(sphere));
+				Object.keys(enemies).forEach(enemyKey => {
+					var enemy = enemies[enemyKey];
+					enemy.passiveMove(sphere);
+					enemy.update && enemy.update(time, enemy);
+				});
 				sphere.physicsImpostor.setLinearVelocity(sphere.physicsImpostor.getLinearVelocity().scale(.99));
 				sphere.update && sphere.update(time, sphere);
 				gl.intensity = Math.cos(time) + 1;
