@@ -21,7 +21,7 @@ var makeGround = (scene, x, y, z) => {
 }
 
 // Particle System
-var addParticleSystem = (mesh, scene) => {
+var addParticleSystem = (mesh, scene, color1, color2, colorDead) => {
 	// Create a particle system
 	var particleSystem = new BABYLON.ParticleSystem("particles", 200, scene);
 
@@ -34,9 +34,9 @@ var addParticleSystem = (mesh, scene) => {
 	// particleSystem.maxEmitBox = new BABYLON.Vector3(1, 0, 0); // To...
 
 	// Colors of all particles
-	particleSystem.color1 = new BABYLON.Color4(0.06, 1, 1);
-	particleSystem.color2 = new BABYLON.Color4(0.78, 0.04, 1);
-	particleSystem.colorDead = new BABYLON.Color4(0.04, 0.03, 1);
+	particleSystem.color1 = color1;
+	particleSystem.color2 = color2;
+	particleSystem.colorDead = colorDead;
 
 	// Size of each particle (random between...
 	particleSystem.minSize = 1;
@@ -124,6 +124,8 @@ var makeNuisance = (scene, x, y, z, r, color, player, physicsHelper) => {
 
 	shooter.actions = {};
 
+	shooter = addParticleSystem(shooter, scene, new BABYLON.Color4(1, 1, 0.06), new BABYLON.Color4(1, 0.04, 0.78), new BABYLON.Color4(1, 0.03, 0.04));
+
 	var fireAtWill = () => {
 		var time = 5000*Math.random();
 		var cancel = setTimeout(() => {
@@ -194,6 +196,8 @@ var makeFoster = (scene, x, y, z, r, color, player, physicsHelper) => {
 	var shooter = addPhysics(makeFosterCylinder(scene, x, y, z, r, color), r);
 
 	shooter.actions = {};
+
+	shooter = addParticleSystem(shooter, scene, new BABYLON.Color4(1, 1, 0.06), new BABYLON.Color4(1, 0.04, 0.78), new BABYLON.Color4(1, 0.03, 0.04));
 
 	var fireAtWill = () => {
 		var time = 5000*Math.random();

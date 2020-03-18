@@ -190,7 +190,7 @@
 			var location = { x: 0, z: 0 };
 			var gridSize = 100;
 			var sphere = makeBasicShooter(scene, 0, 20, 0, 5, BABYLON.Color3.Green());
-			sphere = addParticleSystem(sphere, scene);
+			sphere = addParticleSystem(sphere, scene, new BABYLON.Color4(0.06, 1, 1), new BABYLON.Color4(0.78, 0.04, 1), new BABYLON.Color4(0.04, 0.03, 1));
 			window.sphere = sphere; // DELETE
 			var gridElements = [];
 			sphere.aimDirection = new BABYLON.Vector3(1,0,0);
@@ -284,33 +284,37 @@
 						Object.keys(enemies).forEach(enemyKey => {
 							var enemy = enemies[enemyKey];
 							if (bullet.intersectsMesh(enemy, false)) {
+								enemy.particleSystem.start();
 								bullet.cancel(bullets);
-								if (enemy.takeDamage(20)) { // enemy dies
-									deathSound.play();
-									delete enemies[enemy.enemyIndex];
-									if (addExperience(1) > 0) {				
-										evolutionButtons.forEach(button => {
-											button.isVisible = true;				
-											button.onPointerEnterObservable.add(() => {
-												button.alpha = 1;
+								setTimeout(() => {
+									enemy.particleSystem.stop()
+									if (enemy.takeDamage(20)) { // enemy dies
+										deathSound.play();
+										delete enemies[enemy.enemyIndex];
+										if (addExperience(1) > 0) {				
+											evolutionButtons.forEach(button => {
+												button.isVisible = true;				
+												button.onPointerEnterObservable.add(() => {
+													button.alpha = 1;
+												})
+												button.onPointerOutObservable.add(() => {
+													button.alpha = .5;
+												})
+												button.onPointerClickObservable.add(() => {
+													button.action();
+													evolutionButtons.forEach(button => button.isVisible = false);
+												})
 											})
-											button.onPointerOutObservable.add(() => {
-												button.alpha = .5;
+											statBuffButtons.forEach(button => {
+												button.isVisible = true
+												button.onPointerClickObservable.add(() => {
+													button.action();
+													statBuffButtons.forEach(button => button.isVisible = false);
+												})
 											})
-											button.onPointerClickObservable.add(() => {
-												button.action();
-												evolutionButtons.forEach(button => button.isVisible = false);
-											})
-										})
-										statBuffButtons.forEach(button => {
-											button.isVisible = true
-											button.onPointerClickObservable.add(() => {
-												button.action();
-												statBuffButtons.forEach(button => button.isVisible = false);
-											})
-										})
+										}
 									}
-								}
+								}, 500);
 							}
 						})
 					} else if (bullet.intersectsMesh(sphere, false)) { // enemy hit player
