@@ -181,7 +181,10 @@
 			window.sphere = sphere; // DELETE
 			var gridElements = [];
 			sphere.aimDirection = new BABYLON.Vector3(1,0,0);
-			sphere.fireWeapon = () => fireBullet(sphere, physicsHelper, sphere.aimDirection, true);
+			sphere.weapons = [];
+			var simpleWeapon = () => fireBullet(sphere, physicsHelper, sphere.aimDirection, true);
+			sphere.weapons.push(simpleWeapon);
+			sphere.fireWeapon = () => sphere.weapons.forEach(weapon => weapon());
 			sphere.getChildren().forEach(child => {
 				child.update = (time, self) => {
 					var scalingFactor = .25*Math.cos(time)+.75;

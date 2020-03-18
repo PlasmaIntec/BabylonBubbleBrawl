@@ -29,7 +29,7 @@ var evolveSniper = sphere => {
 		return Math.acos(y) * multiplier;
 	}
 
-	sphere.fireWeapon = () => {
+	var fireLaser = () => {
 		var length = 500;
 		var laser = BABYLON.MeshBuilder.CreateCylinder("laser", {height: length, diameter: 5}, scene);
 		laser = addMaterialToMesh(laser);
@@ -54,6 +54,7 @@ var evolveSniper = sphere => {
 			clearTimeout(cancel);
 		}
 	}
+	sphere.weapons.push(fireLaser);
 }
 
 var evolveBerserker = sphere => {
@@ -69,7 +70,7 @@ var evolveBerserker = sphere => {
 
 	blade.parent = sphere;
 
-	sphere.fireWeapon = () => {
+	var extendBlade = () => {
 		blade.isGrowing = true;
 		blade.update = (time, self) => {
 			var zScalingFactor = self.isGrowing ? self.scaling.z + .1 : self.scaling.z - .1;
@@ -84,6 +85,7 @@ var evolveBerserker = sphere => {
 			self.scaling = new BABYLON.Vector3(xScalingFactor, 1, zScalingFactor);
 		}
 	}; // blade is weapon
+	sphere.weapons.push(extendBlade);
 }
 
 var evolveManipulator = sphere => {
@@ -99,7 +101,7 @@ var evolveManipulator = sphere => {
 		missile.parent = sphere;
 	}, 1000)
 
-	sphere.fireWeapon = () => {
+	var fireMissile = () => {
 		var activeMissile = missiles.shift();	
 		
 		if (!activeMissile) return;
@@ -132,4 +134,5 @@ var evolveManipulator = sphere => {
 			clearTimeout(cancel);
 		}
 	}
+	sphere.weapons.push(fireMissile);
 }
