@@ -38,11 +38,11 @@ var pulse = (object, direction) => {
 
 // Bullet Mechanics
 var bullets = {};
-var fireBullet = (parentMesh, physicsHelper, direction, isFriendly) => {
+var fireBullet = (parentMesh, physicsHelper, direction, isFriendly, bulletSize) => {
 	var mesh = parentMesh.source || parentMesh;
 	var bulletColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
 	var bulletPos = mesh.position.clone();
-	var bullet = makeBullet(scene, bulletPos.x, bulletPos.y, bulletPos.z, 10, bulletColor, isFriendly);
+	var bullet = makeBullet(scene, bulletPos.x, bulletPos.y, bulletPos.z, bulletSize, bulletColor, isFriendly);
 	bullet.direction = direction;
 	var bulletIndex = uniqueId++;
 	bullet.bulletIndex = bulletIndex;

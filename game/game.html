@@ -91,16 +91,29 @@
 			experienceText.background = "purple";
 			experienceText.left = "-400px";
 			experienceText.top = "380px";
+
+			var buffHealth = () => {
+				sphere.healthBuff += 1;
+				subtractHealth(-50);
+			}
+
+			var buffPower = () => {
+				sphere.powerBuff += 2;
+			}
+
+			var buffSpeed = () => {
+				sphere.speedBuff += 5;
+			}
 			
 			var statBuffs = [
-				["speed", "yellow"],
-				["power", "red"],
-				["health", "orange"],
+				["speed", "yellow", buffSpeed],
+				["power", "red", buffPower],
+				["health", "orange", buffHealth],
 			]
 			var statBuffButtons = [];
 
 			statBuffs.forEach((statBuff, index) => {
-				var [name, color] = statBuff;
+				var [name, color, action] = statBuff;
 				var button = BABYLON.GUI.Button.CreateSimpleButton(name, name);
 				button.width = "60px"
 				button.height = "40px";
@@ -109,7 +122,7 @@
 				button.color = "white";
 				button.background = color;
 				button.isVisible = false;
-				button.action = () => console.log(name)
+				button.action = () => { console.log(name); action() }
 				statBuffButtons.push(button);
 				advancedTexture.addControl(button);   
 			})
@@ -181,8 +194,11 @@
 			window.sphere = sphere; // DELETE
 			var gridElements = [];
 			sphere.aimDirection = new BABYLON.Vector3(1,0,0);
+			sphere.healthBuff = 1;
+			sphere.powerBuff = 1;
+			sphere.speedBuff = 10;
 			sphere.weapons = [];
-			var simpleWeapon = () => fireBullet(sphere, physicsHelper, sphere.aimDirection, true);
+			var simpleWeapon = () => fireBullet(sphere, physicsHelper, sphere.aimDirection, true, sphere.powerBuff);
 			sphere.weapons.push(simpleWeapon);
 			sphere.fireWeapon = () => sphere.weapons.forEach(weapon => weapon());
 			sphere.getChildren().forEach(child => {
@@ -193,6 +209,7 @@
 			})
 			sphere.update = (time, self) => {
 				var scalingFactor = .1*Math.cos(time)+.9;
+				scalingFactor *= sphere.healthBuff;
 				self.scaling = new BABYLON.Vector3(scalingFactor, 1, scalingFactor);
 				sphere.getChildren().forEach(child => child.update && child.update(time, child));
 			}
@@ -257,7 +274,6 @@
 			// Animations
 			var time = 0;
 			var prevRay;
-			var speed = 10;
 			var stillPlaying = false;
 			scene.registerBeforeRender(function () {
 				Object.keys(bullets).forEach(bulletKey => {
@@ -314,19 +330,19 @@
 				prevRay = castRay(sphere);
 			
 				if (map["w"] || map["W"]) {
-					pulse(sphere, new BABYLON.Vector3(-speed, 0, 0));
+					pulse(sphere, new BABYLON.Vector3(-sphere.speedBuff, 0, 0));
 				}
 				
 				if ((map["a"] || map["A"])) {
-					pulse(sphere, new BABYLON.Vector3(0, 0, -speed));
+					pulse(sphere, new BABYLON.Vector3(0, 0, -sphere.speedBuff));
 				}
 				
 				if ((map["s"] || map["S"])) {
-					pulse(sphere, new BABYLON.Vector3(speed, 0, 0));
+					pulse(sphere, new BABYLON.Vector3(sphere.speedBuff, 0, 0));
 				}
 				
 				if ((map["d"] || map["D"])) {
-					pulse(sphere, new BABYLON.Vector3(0, 0, speed));
+					pulse(sphere, new BABYLON.Vector3(0, 0, sphere.speedBuff));
 				}
 
 				if (!stillPlaying && outOfGrid(sphere, location, gridSize)) {

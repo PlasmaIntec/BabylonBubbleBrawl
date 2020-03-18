@@ -31,7 +31,7 @@ var evolveSniper = sphere => {
 
 	var fireLaser = () => {
 		var length = 500;
-		var laser = BABYLON.MeshBuilder.CreateCylinder("laser", {height: length, diameter: 5}, scene);
+		var laser = BABYLON.MeshBuilder.CreateCylinder("laser", {height: length, diameter: sphere.powerBuff}, scene);
 		laser = addMaterialToMesh(laser);
 		laser = addGlow(laser, BABYLON.Color3.Red());
 		var angle = convertCoordinatesToAngle(sphere.aimDirection);
@@ -74,7 +74,7 @@ var evolveBerserker = sphere => {
 		blade.isGrowing = true;
 		blade.update = (time, self) => {
 			var zScalingFactor = self.isGrowing ? self.scaling.z + .1 : self.scaling.z - .1;
-			if (zScalingFactor > 10) {
+			if (zScalingFactor > sphere.powerBuff * 5) {
 				self.isGrowing = false;
 			}
 			if (!self.isGrowing && zScalingFactor < 1) {
@@ -112,6 +112,8 @@ var evolveManipulator = sphere => {
 
 		activeMissile.direction = sphere.aimDirection;
 		activeMissile.isFriendly = true;
+
+		activeMissile.scaling = activeMissile.scaling.scale(sphere.powerBuff);
 
 		activeMissile.update = (time, self) => {
 			var pickResult = scene.pick(scene.pointerX, scene.pointerY);

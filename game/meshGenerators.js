@@ -127,7 +127,7 @@ var makeNuisance = (scene, x, y, z, r, color, player, physicsHelper) => {
 	var fireAtWill = () => {
 		var time = 5000*Math.random();
 		var cancel = setTimeout(() => {
-			fireBullet(shooter, physicsHelper, player.position.subtract(shooter.position), false);
+			fireBullet(shooter, physicsHelper, player.position.subtract(shooter.position), false, 10);
 			fireAtWill();
 		}, time);
 		shooter.actions.fire = cancel;
